@@ -1,29 +1,35 @@
 import { useState, useEffect } from 'react'
 import { initializeApp } from "firebase/app";
-import { getRemoteConfig, fetchAndActivate } from "firebase/remote-config";
+import { getBoolean, getRemoteConfig, fetchAndActivate } from "firebase/remote-config";
 import './App.css'
 
+
+console.log(import.meta.env)
 // Your Firebase configuration (replace with your actual config)
-
-
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "G-MEASUREMENT_ID"
+  apiKey: import.meta.env.VITE_API_KEY,
+  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_APP_ID,
+  measurementId: import.meta.env.VITE_MEASUREMENT_ID,
 };
 
 
 const app = initializeApp(firebaseConfig);
 const remoteConfig = getRemoteConfig(app);
 
+// setDefaultConfig({
+//   interest_calculation: false,
+//   credit_score_check: false,
+// });
 
 function App() {
-  const [count, setCount] = useState(0)
-  const [features, setFeatures] = useState({});
+  const [features, setFeatures] = useState({
+    interest_calculation: false,
+    credit_score_check: false,
+  });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,8 +37,8 @@ function App() {
     const fetchFeatures = async () => {
       try {
         await fetchAndActivate(remoteConfig);
-        const interestCalc = remoteConfig.getValue('interest_calculation').val();
-        const creditScoreCheck = remoteConfig.getValue('credit_score_check').val();
+        const interestCalc = getBoolean(remoteConfig, 'interest_calculation');
+        const creditScoreCheck = getBoolean(remoteConfig, 'credit_score_check');
 
         setFeatures({ interest_calculation: interestCalc, credit_score_check: creditScoreCheck });
       } catch (error) {
@@ -53,17 +59,14 @@ function App() {
   return (
     <>
       <h1>Feature Toggles</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <div>
+        <ul>
+          <li>Interest Calculation: {features.interest_calculation ? 'Enabled' : 'Disabled'}</li>
+          <li>Credit Score Check: {features.credit_score_check ? 'Enabled' : 'Disabled'}</li>
+        </ul>
+        {features.interest_calculation && <p>Interest calculation feature is active</p>}
+        {features.credit_score_check && <p>Credit score check feature is active</p>}
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   )
 }
