@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { initializeApp } from "firebase/app";
-import { getBoolean, getRemoteConfig, fetchAndActivate } from "firebase/remote-config";
+import { getBoolean, getString, getRemoteConfig, fetchAndActivate } from "firebase/remote-config";
 import './App.css'
 
 
@@ -29,6 +29,7 @@ function App() {
   const [features, setFeatures] = useState({
     interest_calculation: false,
     credit_score_check: false,
+    loan_limit: "default",
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -39,8 +40,13 @@ function App() {
         await fetchAndActivate(remoteConfig);
         const interestCalc = getBoolean(remoteConfig, 'interest_calculation');
         const creditScoreCheck = getBoolean(remoteConfig, 'credit_score_check');
+        const loanLimit = getString(remoteConfig, 'loan_limit');
 
-        setFeatures({ interest_calculation: interestCalc, credit_score_check: creditScoreCheck });
+        setFeatures({
+          interest_calculation: interestCalc,
+          credit_score_check: creditScoreCheck,
+          loan_limit: loanLimit,
+        });
       } catch (error) {
         setError(error);
         console.error("Error fetching remote config:", error);
@@ -63,9 +69,11 @@ function App() {
         <ul>
           <li>Interest Calculation: {features.interest_calculation ? 'Enabled' : 'Disabled'}</li>
           <li>Credit Score Check: {features.credit_score_check ? 'Enabled' : 'Disabled'}</li>
+          <li>Loan limit: {features.loan_limit}</li>
         </ul>
         {features.interest_calculation && <p>Interest calculation feature is active</p>}
         {features.credit_score_check && <p>Credit score check feature is active</p>}
+        <p>Loan limit: {features.loan_limit}</p>
       </div>
     </>
   )
