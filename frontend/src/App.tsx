@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { initializeApp } from "firebase/app";
-import { getBoolean, getString, getRemoteConfig, fetchAndActivate } from "firebase/remote-config";
+import { getAll, getBoolean, getString, getRemoteConfig, fetchAndActivate } from "firebase/remote-config";
 import './App.css'
 
 
-console.log(import.meta.env)
 // Your Firebase configuration (replace with your actual config)
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
@@ -19,6 +18,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const remoteConfig = getRemoteConfig(app);
+remoteConfig.settings = {
+  minimumFetchIntervalMillis: 1 * 1000, // 1 second
+  fetchTimeoutMillis: 10 * 1000,
+}
 
 // setDefaultConfig({
 //   interest_calculation: false,
@@ -41,6 +44,8 @@ function App() {
         const interestCalc = getBoolean(remoteConfig, 'interest_calculation');
         const creditScoreCheck = getBoolean(remoteConfig, 'credit_score_check');
         const loanLimit = getString(remoteConfig, 'loan_limit');
+        const allConfig = getAll(remoteConfig);
+        console.log('allConfig:', allConfig);
 
         setFeatures({
           interest_calculation: interestCalc,
@@ -64,13 +69,14 @@ function App() {
 
   return (
     <>
-      <h1>Feature Toggles</h1>
+      <h1>Feature Toggles: Status</h1>
       <div>
-        <ul>
+        <ol>
           <li>Interest Calculation: {features.interest_calculation ? 'Enabled' : 'Disabled'}</li>
           <li>Credit Score Check: {features.credit_score_check ? 'Enabled' : 'Disabled'}</li>
           <li>Loan limit: {features.loan_limit}</li>
-        </ul>
+        </ol>
+        <h1>Showing Features</h1>
         {features.interest_calculation && <p>Interest calculation feature is active</p>}
         {features.credit_score_check && <p>Credit score check feature is active</p>}
         <p>Loan limit: {features.loan_limit}</p>
