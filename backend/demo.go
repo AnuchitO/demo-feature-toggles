@@ -140,7 +140,7 @@ var (
 	config              RemoteConfig
 )
 
-func IsEnable(feature string) bool {
+func ItEnable(feature string) bool {
 	if p, ok := config.Parameters[feature]; ok {
 		if p.DefaultValue.Value == "true" {
 			return true
@@ -212,7 +212,7 @@ func main() {
 	})
 
 	e.GET("/credits", func(c echo.Context) error {
-		if IsEnable("credit_score_check") {
+		if ItEnable("credit_score_check") {
 			return c.String(http.StatusOK, "This is a demo app for Firebase Remote Config")
 		}
 
@@ -220,7 +220,7 @@ func main() {
 	})
 
 	e.GET("/interests", func(c echo.Context) error {
-		if IsEnable("interest_calculation") {
+		if ItEnable("interest_calculation") {
 			return c.String(http.StatusOK, "I like to code in Go")
 		}
 
