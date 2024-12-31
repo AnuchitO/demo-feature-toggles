@@ -140,6 +140,22 @@ var (
 	config              RemoteConfig
 )
 
+func IsEnable(feature string) bool {
+	if p, ok := config.Parameters[feature]; ok {
+		if p.DefaultValue.Value == "true" {
+			return true
+		}
+	}
+	return false
+}
+
+func Value(feature string) string {
+	if p, ok := config.Parameters[feature]; ok {
+		return p.DefaultValue.Value
+	}
+	return ""
+}
+
 func main() {
 	s, err := serviceAccount("service-account.json")
 	if err != nil {
@@ -193,6 +209,28 @@ func main() {
 	})
 	e.GET("configs/vesions", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, latestVersionNumber)
+	})
+
+	e.GET("/credits", func(c echo.Context) error {
+		if IsEnable("credit_score_check") {
+			return c.String(http.StatusOK, "This is a demo app for Firebase Remote Config")
+		}
+
+		return c.String(http.StatusNotFound, "Not Found")
+	})
+
+	e.GET("/interests", func(c echo.Context) error {
+		if IsEnable("interest_calculation") {
+			return c.String(http.StatusOK, "I like to code in Go")
+		}
+
+		return c.String(http.StatusNotFound, "Not Found")
+	})
+
+	e.GET("/loans", func(c echo.Context) error {
+		limit := Value("loan_limit")
+
+		return c.String(http.StatusOK, "Your loan limit is: "+limit)
 	})
 
 	e.Start(":8888")
