@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -39,10 +40,10 @@ type ScheduleRequest struct {
 	RecipientAccount string    `json:"recipientAccount" binding:"required"`
 	Amount           float64   `json:"amount" binding:"required"`
 	Currency         string    `json:"currency" binding:"required"`
+	Description      string    `json:"description"`
 	Schedule         string    `json:"schedule" binding:"required"` // "once" or "monthly"
 	ScheduleDate     time.Time `json:"scheduleDate" binding:"required"`
 	EndDate          time.Time `json:"endDate"`
-	Description      string    `json:"description"`
 }
 
 type ScheduleResponse struct {
@@ -161,28 +162,59 @@ func (h *Handler) ScheduleTransfer(c *gin.Context) {
 		return
 	}
 
-	// TODO: feature toggle for once and monthly
-	schID := scheduleID()
-	status := "scheduled"
+	if os.Getenv("ENABLE_SCHEDULE_ONCE") == "true" && req.Schedule == "once" {
+		schID := scheduleID()
+		status := "scheduled"
 
-	_, err := h.db.Exec(`
+		_, err := h.db.Exec(`
         INSERT INTO schedules (schedule_id, sender_account, recipient_account, amount, currency, description, status, schedule, schedule_date, end_date)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
-		schID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.Description, status, req.Schedule, req.ScheduleDate, req.EndDate)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to schedule transfer"})
+			schID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.Description, status, req.Schedule, req.ScheduleDate, req.EndDate)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to schedule transfer"})
+			return
+		}
+
+		resp := ScheduleResponse{
+			ScheduleID:   schID,
+			Status:       status,
+			NextRunDate:  req.ScheduleDate,
+			EndDate:      req.EndDate,
+			ScheduleType: req.Schedule,
+		}
+
+		c.JSON(http.StatusOK, resp)
 		return
 	}
 
-	resp := ScheduleResponse{
-		ScheduleID:   schID,
-		Status:       status,
-		NextRunDate:  req.ScheduleDate,
-		EndDate:      req.EndDate,
-		ScheduleType: req.Schedule,
+	if os.Getenv("ENABLE_SCHEDULE_MONTHLY") == "true" && req.Schedule == "monthly" {
+
+		schID := scheduleID()
+		status := "scheduled"
+
+		_, err := h.db.Exec(`
+        INSERT INTO schedules (schedule_id, sender_account, recipient_account, amount, currency, description, status, schedule, schedule_date, end_date)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
+			schID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.Description, status, req.Schedule, req.ScheduleDate, req.EndDate)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to schedule transfer"})
+			return
+		}
+
+		resp := ScheduleResponse{
+			ScheduleID:   schID,
+			Status:       status,
+			NextRunDate:  req.ScheduleDate,
+			EndDate:      req.EndDate,
+			ScheduleType: req.Schedule,
+		}
+
+		c.JSON(http.StatusOK, resp)
+		return
 	}
 
-	c.JSON(http.StatusOK, resp)
+	msg := fmt.Sprintf("%s schedule transfer is unavailable", req.Schedule)
+	c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 }
 
 func main() {
