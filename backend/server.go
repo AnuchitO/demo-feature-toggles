@@ -6,7 +6,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"os"
 	"time"
 
 	"demo/config"
@@ -164,7 +163,7 @@ func (h *Handler) ScheduleTransfer(c *gin.Context) {
 		return
 	}
 
-	if os.Getenv("ENABLE_SCHEDULE_ONCE") == "true" && req.Schedule == "once" {
+	if config.IsEnabled("enable_schedule_once") && req.Schedule == "once" {
 		schID := scheduleID()
 		status := "scheduled"
 
@@ -189,8 +188,7 @@ func (h *Handler) ScheduleTransfer(c *gin.Context) {
 		return
 	}
 
-	if os.Getenv("ENABLE_SCHEDULE_MONTHLY") == "true" && req.Schedule == "monthly" {
-
+	if config.IsEnabled("enable_schedule_monthly") && req.Schedule == "monthly" {
 		schID := scheduleID()
 		status := "scheduled"
 
@@ -318,6 +316,8 @@ func main() {
 	if err != nil {
 		log.Fatal("conf ", err, conf)
 	}
+
+	config.SetRemoteConfig(conf)
 
 	h := &Handler{db: db}
 

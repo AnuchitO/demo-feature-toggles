@@ -103,8 +103,28 @@ type Condition struct {
 	TagColor   string `json:"tagColor,omitempty"`
 }
 
-func baseURL(sa ServiceAccount) string {
-	return firebaseURL + "/" + sa.ProjectID + "/remoteConfig"
+var remoteConfig RemoteConfig
+
+func SetRemoteConfig(rf RemoteConfig) {
+	remoteConfig = rf
+}
+
+func IsEnabled(name string) bool {
+	v, ok := remoteConfig.Parameters[name]
+	if !ok {
+		return false
+	}
+
+	return v.DefaultValue.Value == "true"
+}
+
+func Value(name string) string {
+	v, ok := remoteConfig.Parameters[name]
+	if !ok {
+		return ""
+	}
+
+	return v.DefaultValue.Value
 }
 
 func GetRemoteConfig(token oauth2.Token, projectID string) (RemoteConfig, error) {
