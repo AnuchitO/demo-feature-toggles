@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"demo/config"
+	"demo/firebase"
 
 	"github.com/gin-gonic/gin"
 	_ "modernc.org/sqlite"
@@ -163,7 +163,7 @@ func (h *Handler) ScheduleTransfer(c *gin.Context) {
 		return
 	}
 
-	if config.IsEnabled("enable_schedule_once") && req.Schedule == "once" {
+	if firebase.IsEnabled("enable_schedule_once") && req.Schedule == "once" {
 		schID := scheduleID()
 		status := "scheduled"
 
@@ -188,7 +188,7 @@ func (h *Handler) ScheduleTransfer(c *gin.Context) {
 		return
 	}
 
-	if config.IsEnabled("enable_schedule_monthly") && req.Schedule == "monthly" {
+	if firebase.IsEnabled("enable_schedule_monthly") && req.Schedule == "monthly" {
 		schID := scheduleID()
 		status := "scheduled"
 
@@ -303,21 +303,36 @@ func main() {
 		log.Fatal(err)
 	}
 
-	sa, err := config.ReadServiceAccount("service-account.json")
+	sa, err := firebase.ReadServiceAccount("service-account.json")
 	if err != nil {
-		log.Fatal("sa", err)
-	}
-	token, err := config.Authen(sa)
-	if err != nil {
-		log.Fatal("token", err)
+		log.Fatal(err)
 	}
 
-	conf, err := config.GetRemoteConfig(token, sa.ProjectID)
+	err = GetFirebaseRemoteConfig(sa)
 	if err != nil {
-		log.Fatal("conf ", err, conf)
+		log.Fatal(err)
 	}
 
-	config.SetRemoteConfig(conf)
+	ticker := time.NewTicker(10 * time.Second)
+	go func() {
+		var lastVersion string
+		tokenSource := firebase.Authen(sa)
+		for range ticker.C {
+			token, err := tokenSource.Token()
+			if err != nil {
+				log.Printf("Error: %v\n", err)
+			}
+			ver, err := firebase.ListVersion(*token, sa.ProjectID)
+			if len(ver) > 0 && ver[0].VersionNumber != lastVersion {
+				lastVersion = ver[0].VersionNumber
+
+				err = GetFirebaseRemoteConfig(sa)
+				if err != nil {
+					log.Printf("Error: %v\n", err)
+				}
+			}
+		}
+	}()
 
 	h := &Handler{db: db}
 
@@ -326,6 +341,26 @@ func main() {
 	router.POST("/transfers", h.CreateTransfer)
 	router.POST("/schedules", h.ScheduleTransfer)
 
+	router.GET("/features", func(c *gin.Context) {
+		c.JSON(http.StatusOK, firebase.AllConfigs())
+	})
+
 	// Start server
 	router.Run(":8080")
+}
+
+func GetFirebaseRemoteConfig(sa firebase.ServiceAccount) error {
+	tokenSource := firebase.Authen(sa)
+	token, err := tokenSource.Token()
+	if err != nil {
+		return err
+	}
+
+	conf, err := firebase.GetRemoteConfig(*token, sa.ProjectID)
+	if err != nil {
+		return err
+	}
+
+	firebase.SetRemoteConfig(conf)
+	return nil
 }

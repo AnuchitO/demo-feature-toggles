@@ -1,65 +1,14 @@
-package config
+package firebase
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
-	"os"
 	"time"
 
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	"golang.org/x/oauth2/jwt"
 )
 
-type FeatureToggle struct{}
-
 const firebaseURL = "https://firebaseremoteconfig.googleapis.com/v1/projects"
-
-type ServiceAccount struct {
-	AuthURI    string `json:"auth_uri"`
-	ProjectID  string `json:"project_id"`
-	Email      string `json:"client_email"`
-	PrivateKey string `json:"private_key"`
-}
-
-func ReadServiceAccount(filename string) (ServiceAccount, error) {
-	b, err := os.ReadFile(filename)
-	if err != nil {
-		return ServiceAccount{}, err
-	}
-	sa := ServiceAccount{}
-	err = json.Unmarshal(b, &sa)
-	return sa, err
-}
-
-func Authen(c ServiceAccount) (oauth2.Token, error) {
-	cf := &jwt.Config{
-		Email:      c.Email,
-		PrivateKey: []byte(c.PrivateKey),
-		Scopes: []string{
-			"https://www.googleapis.com/auth/firebase.remoteconfig",
-		},
-		TokenURL: google.JWTTokenURL,
-	}
-	token, err := cf.TokenSource(context.Background()).Token()
-	if err != nil {
-		return oauth2.Token{}, err
-	}
-
-	return *token, nil
-}
-
-// refresh token if near expiry time
-func (ft *FeatureToggle) RefreshToken(token *oauth2.Token) (*oauth2.Token, error) {
-	if token.Valid() {
-		return token, nil
-	}
-
-	// TODO: implement token refresh logic here
-
-	return token, nil
-}
 
 // RemoteConfigResponse represents the full response from Firebase Remote Config API.
 type RemoteConfig struct {
@@ -104,6 +53,10 @@ type Condition struct {
 }
 
 var remoteConfig RemoteConfig
+
+func AllConfigs() RemoteConfig {
+	return remoteConfig
+}
 
 func SetRemoteConfig(rf RemoteConfig) {
 	remoteConfig = rf
