@@ -9,6 +9,8 @@ import (
 	"os"
 	"time"
 
+	"demo/config"
+
 	"github.com/gin-gonic/gin"
 	_ "modernc.org/sqlite"
 )
@@ -301,6 +303,20 @@ func main() {
     `)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	sa, err := config.ReadServiceAccount("service-account.json")
+	if err != nil {
+		log.Fatal("sa", err)
+	}
+	token, err := config.Authen(sa)
+	if err != nil {
+		log.Fatal("token", err)
+	}
+
+	conf, err := config.GetRemoteConfig(token, sa.ProjectID)
+	if err != nil {
+		log.Fatal("conf ", err, conf)
 	}
 
 	h := &Handler{db: db}
