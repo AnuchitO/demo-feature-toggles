@@ -13,11 +13,26 @@ const useStyles = makeStyles({
     paddingRight: 32,
     boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
     color: 'white',
-    height: 48,
+    height: 36,
     padding: '0 30px',
     textTransform: 'none',
   },
 });
+
+
+const Transaction = () => {
+  return <>
+    <div className="flex justify-between m-4">
+      <div className="flex flex-col text-left">
+        <p className="font-thin text-gray text-sm font-os">Transfer out</p>
+      </div>
+      <div className="flex flex-col text-right">
+        <p className="font-thin text-gray-400 text-xs/6 tracking-tighter font-os">22 Jan 2025 15:03</p>
+        <p className="font-thin text-red-400 text-sm font-os">-4,900.00</p>
+      </div>
+    </div>
+  </>
+}
 
 
 const App = () => {
@@ -42,13 +57,24 @@ const App = () => {
             > Transfer</Button>
           </div>
         </div>
-        <div className="text-center mt-8 mb-2 font-quick">
-          <h1 className="font-black text-gray-700 tracking-wide text-xl">
-            Banks are supported
-          </h1>
-          <p className="font-bold text-gray-500">including yours</p>
+        <div className="flex flex-col justify-center m-4" >
+          <div className="flex justify-between m-1">
+            <p className="font-black text-slate-100 text-xs">
+              Transactions
+            </p>
+            <p className="font-black text-slate-100 text-xs">
+              Jan 2025
+            </p>
+          </div>
+          <div className="w-80 h-40 rounded-lg shadow-lg" >
+            <Transaction />
+            <hr className="border-t border-gray-500 m-4" />
+            <Transaction />
+            <p className="font-black text-gray-500  text-sm">
+              End of this month's transactions
+            </p>
+          </div>
         </div>
-        <div className="p-8 flex justify-center">hello</div>
       </div>
     </div >
   </>
