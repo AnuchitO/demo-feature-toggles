@@ -1,12 +1,4 @@
-
-const formatCurrency = (value: number) => {
-  return value.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'THB',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-};
+import { formatCurrency } from './formater'
 
 export interface Account {
   branch: string;
