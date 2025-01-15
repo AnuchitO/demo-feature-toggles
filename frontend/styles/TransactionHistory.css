@@ -1,0 +1,113 @@
+.transaction-history {
+  background: transparent;
+  color: #000;
+  height: 100%;
+
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.amount.positive, .status.positive {
+  color: green;
+}
+
+.amount.negative, .status.negative {
+  color: red;
+}
+
+.head_text {
+  font-size: 40px;
+  font-weight:bolder;
+  color: #f1f1f1;
+  text-align: center;
+  margin-bottom: 30px;
+  margin-top: 10px;
+}
+
+.head,
+.transaction-history li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+}
+
+.head {
+  width:100%;
+  background-color: #f1f1f1;
+  font-weight: 200;
+  padding: 10px 20px;
+}
+
+.transaction-history ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.transaction-history li:hover {
+  background-color: #f0f0f0;
+}
+
+.head .serial-number,
+.head .amo,
+.head .date,
+.head .time-tran,
+.head .status,
+.serial-number,
+.amount,
+.date,
+.time-tran,
+.status {
+  flex: 1;
+  text-align: center;
+}
+
+.amount {
+  font-weight: bold;
+}
+
+.serial-number {
+  margin-right: 20px;
+}
+
+.head .amo {
+  min-width: fit-content;
+}
+
+.date {
+  margin-right: 20px;
+  min-width: fit-content;
+}
+
+.time-tran {
+  margin-right: 10px;
+  min-width: fit-content;
+  margin-left: 10px;
+}
+
+.status {
+  margin-right: 10px;
+  margin-left: 10px;
+}
+
+.head_text{
+  font-size: 40px;
+
+}
+
+.loadermain{
+  top:50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+
+

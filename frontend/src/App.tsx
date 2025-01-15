@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { initializeApp } from "firebase/app";
 import { getAll, getBoolean, getString, getRemoteConfig, fetchAndActivate } from "firebase/remote-config";
 import './App.css'
+import TransactionHistory from './TransactionHistory';
 
 
 // Your Firebase configuration (replace with your actual config)
@@ -69,6 +70,22 @@ function App() {
 
   return (
     <>
+      <TransactionHistory transactions={[
+        {
+          id: 1,
+          amount: 100,
+          type: 'credit',
+          description: 'Salary',
+          date: "2021-09-01"
+        },
+        {
+          id: 1,
+          amount: 100,
+          type: 'credit',
+          description: 'Salary',
+          date: new Date()
+        }
+      ]} />
       <h1>Feature Toggles: Status</h1>
       <div>
         <ol>
