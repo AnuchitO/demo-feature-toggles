@@ -1,4 +1,5 @@
 import { Accounts } from './Accounts'
+import { MonthlyDropdown } from './MonthlyDropdown'
 import "./App.css"
 import icon from './icon-transfer.svg'
 import { makeStyles } from '@material-ui/core/styles';
@@ -62,9 +63,7 @@ const App = () => {
             <p className="font-black text-slate-100 text-xs">
               Transactions
             </p>
-            <p className="font-black text-slate-100 text-xs">
-              Jan 2025
-            </p>
+            <MonthlyDropdown />
           </div>
           <div className="w-80 h-40 rounded-lg shadow-lg" >
             <Transaction />
