@@ -1,105 +1,56 @@
-import { useState, useEffect } from 'react'
-import { initializeApp } from "firebase/app";
-import { getAll, getBoolean, getString, getRemoteConfig, fetchAndActivate } from "firebase/remote-config";
-import './App.css'
-import TransactionHistory from './TransactionHistory';
+import { Accounts } from './Accounts'
+import "./App.css"
+import icon from './icon-transfer.svg'
+import { makeStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
+
+const useStyles = makeStyles({
+  root: {
+    background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+    border: 0,
+    borderRadius: 100,
+    paddingLeft: 32,
+    paddingRight: 32,
+    boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
+    color: 'white',
+    height: 48,
+    padding: '0 30px',
+    textTransform: 'none',
+  },
+});
 
 
-// Your Firebase configuration (replace with your actual config)
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_API_KEY,
-  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_APP_ID,
-  measurementId: import.meta.env.VITE_MEASUREMENT_ID,
-};
+const App = () => {
+  const classes = useStyles();
 
+  const onClick = () => {
+    alert('transfer')
+  }
 
-const app = initializeApp(firebaseConfig);
-const remoteConfig = getRemoteConfig(app);
-remoteConfig.settings = {
-  minimumFetchIntervalMillis: 1 * 1000, // 1 second
-  fetchTimeoutMillis: 10 * 1000,
-}
-
-// setDefaultConfig({
-//   interest_calculation: false,
-//   credit_score_check: false,
-// });
-
-function App() {
-  const [features, setFeatures] = useState({
-    interest_calculation: false,
-    credit_score_check: false,
-    loan_limit: "default",
-  });
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchFeatures = async () => {
-      try {
-        await fetchAndActivate(remoteConfig);
-        const interestCalc = getBoolean(remoteConfig, 'interest_calculation');
-        const creditScoreCheck = getBoolean(remoteConfig, 'credit_score_check');
-        const loanLimit = getString(remoteConfig, 'loan_limit');
-        const allConfig = getAll(remoteConfig);
-        console.log('allConfig:', allConfig);
-
-        setFeatures({
-          interest_calculation: interestCalc,
-          credit_score_check: creditScoreCheck,
-          loan_limit: loanLimit,
-        });
-      } catch (error) {
-        setError(error);
-        console.error("Error fetching remote config:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFeatures();
-  }, []);
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-
-
-  return (
-    <>
-      <TransactionHistory transactions={[
-        {
-          id: 1,
-          amount: 100,
-          type: 'credit',
-          description: 'Salary',
-          date: "2021-09-01"
-        },
-        {
-          id: 1,
-          amount: 100,
-          type: 'credit',
-          description: 'Salary',
-          date: new Date()
-        }
-      ]} />
-      <h1>Feature Toggles: Status</h1>
-      <div>
-        <ol>
-          <li>Interest Calculation: {features.interest_calculation ? 'Enabled' : 'Disabled'}</li>
-          <li>Credit Score Check: {features.credit_score_check ? 'Enabled' : 'Disabled'}</li>
-          <li>Loan limit: {features.loan_limit}</li>
-        </ol>
-        <h1>Showing Features</h1>
-        {features.interest_calculation && <p>Interest calculation feature is active</p>}
-        {features.credit_score_check && <p>Credit score check feature is active</p>}
-        <p>Loan limit: {features.loan_limit}</p>
+  return <>
+    <div>
+      <div className="rounded-2xl overflow-hidden shadow-lg">
+        {/* <div className="flex justify-center bg-gradient-to-r from-green-300 via-blue-500 to-purple-600" > */}
+        <div className="flex flex-col justify-center" >
+          <div>
+            <Accounts />
+          </div>
+          <div>
+            <Button className={classes.root}
+              startIcon={<img src={icon} alt="transfer" className="w-6 h-6" />}
+              onClick={onClick}
+            > Transfer</Button>
+          </div>
+        </div>
+        <div className="text-center mt-8 mb-2 font-quick">
+          <h1 className="font-black text-gray-700 tracking-wide text-xl">
+            Banks are supported
+          </h1>
+          <p className="font-bold text-gray-500">including yours</p>
+        </div>
+        <div className="p-8 flex justify-center">hello</div>
       </div>
-    </>
-  )
+    </div >
+  </>
 }
-
-export default App
+export default App;

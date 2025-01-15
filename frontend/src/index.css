@@ -67,15 +67,6 @@ button:focus-visible {
   }
 }
 
-@import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@300&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Open+Sans&family=Space+Mono&display=swap");
-.custom-font {
-  font-family: Roboto;
-}
-.font-quick {
-  font-family: Quicksand;
-}
 .font-os {
   font-family: "Space Mono", monospace;
 }

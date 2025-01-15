@@ -87,5 +87,28 @@ const TransactionHistory = ({ transactions }) => {
   );
 };
 
+
+const Demo = () => {
+  return <>
+    <TransactionHistory transactions={[
+      {
+        id: 1,
+        amount: 100,
+        type: 'credit',
+        description: 'Salary',
+        date: "2021-09-01"
+      },
+      {
+        id: 1,
+        amount: 100,
+        type: 'credit',
+        description: 'Salary',
+        date: new Date()
+      }
+    ]} />
+  </>
+}
+
 export default TransactionHistory;
+
 
