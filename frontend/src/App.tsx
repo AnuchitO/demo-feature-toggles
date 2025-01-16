@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Accounts } from './Accounts'
 import { MonthlyDropdown } from './MonthlyDropdown'
 import "./App.css"
@@ -33,6 +33,14 @@ const Transaction = ({ type = "Activity", date = "18 Jan 2025 15:03", amount = 0
 
 
 const Transfers = () => {
+  const [transactions, setTransactions] = useState<TransactionProps[]>([])
+
+  useEffect(() => {
+    setTransactions([
+      { type: "Transfer in", date: "10 Jan 2025 14:22", amount: 498200 },
+      { type: "Transfer out", date: "16 Jan 2025 11:35", amount: -293000 },
+    ])
+  }, [])
   return <>
     <div className="flex justify-between m-1">
       <p className="font-black text-slate-100 text-xs">
@@ -41,9 +49,12 @@ const Transfers = () => {
       <MonthlyDropdown />
     </div>
     <div className="w-full h-full min-w-100 min-h-40 rounded-lg shadow-lg" >
-      <Transaction type={"Transfer in"} date={"10 Jan 2025 14:22"} amount={498200} />
-      <hr className="border-t border-gray-500 m-4" />
-      <Transaction type={"Transfer out"} date={"16 Jan 2025 11:35"} amount={-293000} />
+      {transactions.map((transaction, index) => {
+        return <>
+          <Transaction key={index} type={transaction.type} date={transaction.date} amount={transaction.amount} />
+          {index < transactions.length - 1 && <hr className="border-t border-gray-500 m-4" />}
+        </>
+      })}
     </div>
     <p className="font-black text-gray-500 mt-2 text-sm">
       End of this month's transactions
@@ -90,6 +101,16 @@ const Schedule = ({ toBank, toAccount = "000-000-000-000", toAccountName = "Acco
 }
 
 export const Schedules = () => {
+  const [schedules, setSchedules] = useState<ScheduleProps[]>([])
+
+  useEffect(() => {
+    setSchedules([
+      { toBank: "KTB", toAccount: "222-222-222-222", toAccountName: "AnuchitO", amount: -1899900, date: "10 Jan 2025" },
+      { toBank: "SCB", toAccount: "333-333-333-333", toAccountName: "AnuchitO", amount: -2499850, date: "10 Jan 2025" },
+      { toBank: "KBank", toAccount: "444-444-444-444", toAccountName: "AnuchitO", amount: -2499850, date: "10 Jan 2025" },
+    ])
+  }, [])
+
   return <>
     <div className="flex justify-center m-1">
       <p className="font-black text-slate-100 text-xs">
@@ -97,11 +118,12 @@ export const Schedules = () => {
       </p>
     </div>
     <div className="w-full h-full min-w-100 min-h-40 rounded-lg shadow-lg" >
-      <Schedule toBank={"KTB"} toAccount={"222-222-222-222"} toAccountName="AnuchitO" amount={-1899900} date={"10 Jan 2025"} />
-      <hr className="border-t border-gray-500 m-4" />
-      <Schedule toBank={"SCB"} toAccount={"333-333-333-333"} toAccountName="AnuchitO" amount={-2499850} date={"10 Jan 2025"} />
-      <hr className="border-t border-gray-500 m-4" />
-      <Schedule toBank={"KBank"} toAccount={"444-444-444-444"} toAccountName="AnuchitO" amount={-2499850} date={"10 Jan 2025"} />
+      {schedules.map((schedule, index) => {
+        return <>
+          <Schedule key={index} toBank={schedule.toBank} toAccount={schedule.toAccount} toAccountName={schedule.toAccountName} amount={schedule.amount} date={schedule.date} />
+          {index < schedules.length - 1 && <hr className="border-t border-gray-500 m-4" />}
+        </>
+      })}
     </div>
     <p className="font-black text-gray-500 mt-2 text-sm">
       End of scheduled transactions

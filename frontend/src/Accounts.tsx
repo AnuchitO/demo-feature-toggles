@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { formatCurrency } from './formater'
 
 export interface Account {
@@ -44,14 +45,26 @@ export const Balance = ({ account = {
 }
 
 export const Accounts = () => {
-  const account = {
-    branch: 'Kalasin',
-    number: '111-111-111-111',
-    type: 'Savings',
-    name: 'Main',
-    currentBalance: 99999877,
-    availableBalance: 99999877,
-  };
+  const [account, setAccount] = useState<Account>({
+    branch: 'Branch Name',
+    number: '000-000-000-000',
+    type: ' Account Type',
+    name: 'Account Name',
+    currentBalance: 0,
+    availableBalance: 0,
+  });
+
+  useEffect(() => {
+    setAccount({
+      branch: 'Kalasin',
+      number: '111-111-111-111',
+      type: 'Savings',
+      name: 'Main',
+      currentBalance: 99999877,
+      availableBalance: 99999877,
+    });
+  }, []);
+
   return (
     <>
       <Balance account={account} />
