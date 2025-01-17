@@ -24,7 +24,7 @@ const Transaction = ({ type = "Activity", date = "18 Jan 2025 15:03", amount = 0
   </>
 }
 
-export const Transfers = () => {
+export const Transactions = () => {
   const [transactions, setTransactions] = useState<TransactionProps[]>([])
 
   useEffect(() => {

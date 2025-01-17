@@ -1,4 +1,4 @@
-import icon from './icon-transfer.svg'
+import icon from './icon-transaction.svg'
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 
@@ -20,17 +20,16 @@ const useStyles = makeStyles({
 });
 
 interface Props {
-  label: string;
   onClick: () => void;
 }
 
 
-export const TransferButton = ({ onClick, label = "Transfer" }: Props) => {
+export const TransactionButton = ({ onClick }: Props) => {
   const classes = useStyles();
   return <>
     <Button className={classes.root}
       startIcon={<img src={icon} alt="transfer" className="w-6 h-6" />}
       onClick={onClick}
-    > {label}</Button>
+    > Transactions</Button>
   </>
 }
