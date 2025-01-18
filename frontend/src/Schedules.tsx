@@ -66,7 +66,7 @@ export const Schedules = () => {
         </>
       })}
     </div>
-    <p className="font-black text-gray-500 mt-2 text-sm">
+    <p className="font-black text-gray-500 mt-2 mb-2 text-sm">
       End of scheduled transactions
     </p>
   </>

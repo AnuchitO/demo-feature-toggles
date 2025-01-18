@@ -48,7 +48,7 @@ export const Transactions = () => {
         </>
       })}
     </div>
-    <p className="font-black text-gray-500 mt-2 text-sm">
+    <p className="font-black text-gray-500 mt-2 mb-2 text-sm">
       End of this month's transactions
     </p>
   </>
