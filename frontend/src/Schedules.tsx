@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { useState, useEffect } from 'react'
 import { commaSeparated } from './formater'
 import iconSCB from './icon-scb.png'
@@ -60,10 +61,10 @@ export const Schedules = () => {
     </div>
     <div className="w-full h-full min-w-100 min-h-40 rounded-lg shadow-lg" >
       {schedules.map((schedule, index) => {
-        return <>
+        return <Fragment key={index}>
           <Schedule key={index} toBank={schedule.toBank} toAccount={schedule.toAccount} toAccountName={schedule.toAccountName} amount={schedule.amount} date={schedule.date} />
           {index < schedules.length - 1 && <hr className="border-t border-gray-500 m-4" />}
-        </>
+        </Fragment>
       })}
     </div>
     <p className="font-black text-gray-500 mt-2 mb-2 text-sm">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { MonthlyDropdown } from './MonthlyDropdown'
 import { commaSeparated } from './formater'
 
@@ -42,10 +42,9 @@ export const Transactions = () => {
     </div>
     <div className="w-full h-full min-w-100 min-h-40 rounded-lg shadow-lg" >
       {transactions.map((transaction, index) => {
-        return <>
-          <Transaction key={index} type={transaction.type} date={transaction.date} amount={transaction.amount} />
-          {index < transactions.length - 1 && <hr className="border-t border-gray-500 m-4" />}
-        </>
+        return <Fragment key={index}>
+          <Transaction type={transaction.type} date={transaction.date} amount={transaction.amount} />
+        </Fragment>
       })}
     </div>
     <p className="font-black text-gray-500 mt-2 mb-2 text-sm">
