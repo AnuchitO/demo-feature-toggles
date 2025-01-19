@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
 	"demo/firebase"
@@ -15,10 +16,13 @@ import (
 )
 
 type Account struct {
-	AccountNumber string  `json:"accountNumber"`
-	AccountName   string  `json:"accountName"`
-	Balance       float64 `json:"balance"`
-	Currency      string  `json:"currency"`
+	Branch           string  `json:"branch"`
+	AccountNumber    string  `json:"number"`
+	AccountType      string  `json:"type"`
+	AccountName      string  `json:"name"`
+	Balance          float64 `json:"currentBalance"`
+	AvailableBalance float64 `json:"availableBalance"`
+	Currency         string  `json:"currency"`
 }
 
 // Request & Response Structs
@@ -64,11 +68,12 @@ func (h *Handler) GetBalance(c *gin.Context) {
 	accountNo := c.Param("accountNumber")
 	var account Account
 	err := h.db.QueryRow(`
-        SELECT account_number, account_name, balance, currency
+        SELECT branch, account_number, type, account_name, balance, available_balance, Currency
         FROM accounts
         WHERE account_number = $1`,
-		accountNo).Scan(&account.AccountNumber, &account.AccountName, &account.Balance, &account.Currency)
+		accountNo).Scan(&account.Branch, &account.AccountNumber, &account.AccountType, &account.AccountName, &account.Balance, &account.AvailableBalance, &account.Currency)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get balance"})
 		return
 	}
@@ -218,8 +223,14 @@ func (h *Handler) ScheduleTransfer(c *gin.Context) {
 }
 
 func main() {
-	router := gin.Default()
-	db, err := sql.Open("sqlite", "./bank.sqlite")
+	bankDB := "./bank.sqlite"
+	// reset database
+	err := os.Remove(bankDB)
+	if err != nil {
+		log.Println(err)
+	}
+
+	db, err := sql.Open("sqlite", bankDB)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -227,10 +238,13 @@ func main() {
 
 	_, err = db.Exec(`
         CREATE TABLE IF NOT EXISTS accounts (
+            branch TEXT NOT NULL DEFAULT '',
             account_number TEXT PRIMARY KEY,
-            account_name TEXT NOT NULL,
-            balance REAL NOT NULL,
-            currency TEXT NOT NULL
+            type TEXT NOT NULL DEFAULT '',
+            account_name TEXT NOT NULL DEFAULT '',
+            balance REAL NOT NULL DEFAULT 0,
+            available_balance REAL NOT NULL DEFAULT 0,
+            currency TEXT NOT NULL DEFAULT 'THB'
         )
         `)
 	if err != nil {
@@ -270,11 +284,11 @@ func main() {
 
 	// seed data
 	_, err = db.Exec(`
-        INSERT INTO accounts (account_number, account_name, balance, currency)
+        INSERT INTO accounts (branch, account_number, type, account_name, balance, available_balance, currency)
         VALUES
-            ('111-111-111', 'John Doe', 50000.00, 'THB'),
-            ('222-222-222', 'Alice', 20000.00, 'THB'),
-            ('333-333-333', 'Bob', 10000.00, 'THB')
+            ('Kalasin', '111-111-111', 'Saving', 'AnuchitO', 98898850.00, 98898850.00, 'THB'),
+            ('KhonKean', '222-222-222', 'Saving', 'MaiThai', 55555500.00, 55555500.00, 'THB'),
+            ('Bangkok', '333-333-333', 'Saving', 'LaumPlearn', 333000.00, 333000.00, 'THB')
         ON CONFLICT DO NOTHING;
     `)
 	if err != nil {
@@ -335,6 +349,17 @@ func main() {
 	}()
 
 	h := &Handler{db: db}
+
+	router := gin.Default()
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
+	// allow all origins
+	router.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	})
 
 	// Routes
 	router.GET("/accounts/:accountNumber/balances", h.GetBalance)

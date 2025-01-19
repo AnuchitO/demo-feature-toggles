@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { formatCurrency } from './formater'
+import { formatCurrency } from './formater';
+import { api } from './services/api';
 
-export interface Account {
+interface Account {
   branch: string;
   number: string;
   type: string;
@@ -10,14 +11,20 @@ export interface Account {
   availableBalance: number;
 }
 
-export const Balance = ({ account = {
+interface BalanceProps {
+  account: Account;
+}
+
+const defaultAccount: Account = {
   branch: 'Branch Name',
-  number: '000-000-000-000',
-  type: ' Account Type',
+  number: '000-000-000',
+  type: 'Account Type',
   name: 'Account Name',
   currentBalance: 0,
   availableBalance: 0,
-} }: { account: Account }) => {
+};
+
+export const Balance: React.FC<BalanceProps> = ({ account = defaultAccount }) => {
   return <>
     <div className="flex justify-center m-4" >
       <div className="w-80 h-40 bg-gradient-to-r from-blue-600 via-blue-800 to-gray-900 rounded-lg shadow-lg" >
@@ -42,54 +49,55 @@ export const Balance = ({ account = {
       </div>
     </div>
   </>
-}
+};
 
-export const Accounts = () => {
-  const [account, setAccount] = useState<Account>({
-    branch: 'Branch Name',
-    number: '000-000-000-000',
-    type: ' Account Type',
-    name: 'Account Name',
-    currentBalance: 0,
-    availableBalance: 0,
-  });
+const fetchAccount = async (accountNumber: string): Promise<Account> => {
+  try {
+    const response = await api.get<Account>(`/accounts/${accountNumber}/balances`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching account:', error);
+    throw error;
+  }
+};
+
+export const Accounts: React.FC = () => {
+  const [account, setAccount] = useState<Account>(defaultAccount);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setAccount({
-      branch: 'Kalasin',
-      number: '111-111-111-111',
-      type: 'Savings',
-      name: 'Main',
-      currentBalance: 99999877,
-      availableBalance: 99999877,
-    });
+    const loadAccount = async () => {
+      try {
+        setIsLoading(true);
+        const data = await fetchAccount('111-111-111');
+        setAccount(data);
+      } catch (err) {
+        console.error('Failed to load account data:', err);
+        setError('Failed to load account data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAccount();
   }, []);
 
+  if (isLoading) {
+    return <div className="text-center p-4">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500 p-4">{error}</div>;
+  }
+
+  return <Balance account={account} />;
+};
+
+export const Demo: React.FC = () => {
   return (
-    <>
-      <Balance account={account} />
-    </>
+    <div className="space-y-4">
+      <Balance account={defaultAccount} />
+    </div>
   );
-}
-
-
-export const Demo = () => {
-  return <>
-    <Balance account={{
-      branch: 'Branch Name',
-      number: '000-000-000-000',
-      type: ' Account Type',
-      name: 'Account Name',
-      currentBalance: 0,
-      availableBalance: 0,
-    }} />
-    <Balance account={{
-      branch: 'Branch Name',
-      number: '000-000-000-000',
-      type: ' Account Type',
-      name: 'Account Name',
-      currentBalance: 0,
-      availableBalance: 0,
-    }} />
-  </>
-}
+};
