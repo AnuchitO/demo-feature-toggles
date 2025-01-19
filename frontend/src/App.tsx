@@ -8,7 +8,6 @@ import { Accounts } from './Accounts'
 import { Transactions } from './Transactions'
 import { Schedules } from './Schedules'
 
-
 const App = () => {
   const [tab, setTab] = useState('transaction')
   const navigate = useNavigate()

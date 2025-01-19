@@ -4,8 +4,11 @@ import { useNavigate } from 'react-router-dom'
 import { Input, Field, Label, Select, Switch } from '@headlessui/react'
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
 import { TransferButton } from './TransferButton'
+import { CancelButton } from './CancelButton'
 import { Accounts } from './Accounts'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
+
+import { Days, MonthDatePicker, SingleDatePicker } from './DatePicker'
 
 interface TextProps {
   label: string;
@@ -95,28 +98,29 @@ function ScheduleTab() {
         <hr className="border-t border-gray-500 mt-1" />
         <TabPanels className="mt-3">
           <TabPanel>
-            <div>
-              <p>Tab Once</p>
-              <p>Scheduled date</p>
-              <p>Select date</p>
+            <div className="flex justify-center w-full mb-2">
+              <Field className="flex flex-col items-start w-full">
+                <Label className="mb-2" >Scheduled date</Label>
+                <SingleDatePicker />
+              </Field>
             </div>
           </TabPanel>
           <TabPanel>
             <div>
-              <p>Tab Monthly</p>
-              <p>Every</p>
-              <p>Dropdown date</p>
-
-              <p>From</p>
-              <p>Dropdown month Year</p>
-
-              <p>To</p>
-              <p>Dropdown month Year</p>
+              <Days />
+              <Field className="flex flex-col items-start m-4">
+                <Label className="mb-2">From</Label>
+                <MonthDatePicker />
+              </Field>
+              <Field className="flex flex-col items-start m-4">
+                <Label className="mb-2">To</Label>
+                <MonthDatePicker />
+              </Field>
             </div>
           </TabPanel>
         </TabPanels>
-      </TabGroup>
-    </div>
+      </TabGroup >
+    </div >
   )
 }
 export function Banks() {
@@ -172,7 +176,7 @@ const Transfers = () => {
             </div>
             <div className="flex flex-row justify-center mt-2" >
               <div className="flex one-space">
-                <TransferButton label="Cancel" onClick={goBack} />
+                <CancelButton label="Cancel" onClick={goBack} />
               </div>
               <div className="flex third-space">
                 <TransferButton label="Confirm Transfer" onClick={goBack} />
