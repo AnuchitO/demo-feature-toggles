@@ -98,7 +98,7 @@ func (h *Handler) GetTransactions(c *gin.Context) {
 	accountNo := c.Param("accountNumber")
 	rows, err := h.db.Query(`
         SELECT transaction_id, sender_account, recipient_account, recipient_account_name, receipt_bank, type, amount, currency, note, transferred_at
-        FROM transfers
+        FROM transactions
         WHERE sender_account = $1
         `, accountNo)
 	if err != nil {
@@ -164,13 +164,13 @@ func (h *Handler) CreateTransfer(c *gin.Context) {
 	txID := transactionID()
 	stamp := time.Now()
 
-	// 2. insert to transfers TABLE
+	// 2. insert to transactions TABLE
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
 	}
 
 	_, err = tx.Exec(`
-        INSERT INTO transfers (transaction_id, sender_account, recipient_account, amount, currency, note, transferred_at)
+        INSERT INTO transactions (transaction_id, sender_account, recipient_account, amount, currency, note, transferred_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 		txID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.note, stamp)
 	if err != nil {
@@ -302,7 +302,7 @@ func main() {
 	}
 
 	_, err = db.Exec(`
-        CREATE TABLE IF NOT EXISTS transfers (
+        CREATE TABLE IF NOT EXISTS transactions (
             transaction_id TEXT PRIMARY KEY,
             sender_account TEXT NOT NULL,
             recipient_account TEXT NOT NULL,
@@ -355,7 +355,7 @@ func main() {
 	}
 
 	_, err = db.Exec(`
-        INSERT INTO transfers (transaction_id, sender_account, recipient_account, receipt_bank, amount, currency, type, note, transferred_at)
+        INSERT INTO transactions (transaction_id, sender_account, recipient_account, receipt_bank, amount, currency, type, note, transferred_at)
         VALUES
             ('TXN123456789', '111-111-111', '222-222-222', 'KTB',  98982500, 'THB', 'Transfer in', 'Lunch', '2025-01-10 14:22:00'),
             ('TXN120456799', '111-111-111', '444-444-444', 'KBank', -2300000, 'THB', 'Transfer out', 'Dinner', '2025-01-10 14:22:00'),
