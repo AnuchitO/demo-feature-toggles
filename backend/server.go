@@ -17,13 +17,13 @@ import (
 )
 
 type Account struct {
-	Branch           string  `json:"branch"`
-	AccountNumber    string  `json:"number"`
-	AccountType      string  `json:"type"`
-	AccountName      string  `json:"name"`
-	Balance          float64 `json:"currentBalance"`
-	AvailableBalance float64 `json:"availableBalance"`
-	Currency         string  `json:"currency"`
+	Branch           string `json:"branch"`
+	AccountNumber    string `json:"number"`
+	AccountType      string `json:"type"`
+	AccountName      string `json:"name"`
+	Balance          int64  `json:"currentBalance"`
+	AvailableBalance int64  `json:"availableBalance"`
+	Currency         string `json:"currency"`
 }
 
 type Transaction struct {
@@ -33,7 +33,7 @@ type Transaction struct {
 	ToAccountName string    `json:"toAccountName"`
 	ToBank        string    `json:"toBank"`
 	Type          string    `json:"type"`
-	Amount        float64   `json:"amount"`
+	Amount        int64     `json:"amount"`
 	Currency      string    `json:"currency"`
 	Note          string    `json:"note"`
 	TransferredAt time.Time `json:"transferredAt"`
@@ -45,19 +45,19 @@ type Schedule struct {
 	ToAccount     string    `json:"toAccount"`
 	ToAccountName string    `json:"toAccountName"`
 	ToBank        string    `json:"toBank"`
-	Amount        float64   `json:"amount"`
+	Amount        int64     `json:"amount"`
 	Note          string    `json:"note"`
 	ScheduleDate  time.Time `json:"date"`
 }
 
 // Request & Response Structs
 type TransferRequest struct {
-	FromAccount string  `json:"fromAccount" binding:"required"`
-	ToAccount   string  `json:"toAccount" binding:"required"`
-	ToBank      string  `json:"toBank" binding:"required"`
-	Amount      float64 `json:"amount" binding:"required"`
-	Currency    string  `json:"currency" binding:"required"`
-	Note        string  `json:"note"`
+	FromAccount string `json:"fromAccount" binding:"required"`
+	ToAccount   string `json:"toAccount" binding:"required"`
+	ToBank      string `json:"toBank" binding:"required"`
+	Amount      int64  `json:"amount" binding:"required"`
+	Currency    string `json:"currency" binding:"required"`
+	Note        string `json:"note"`
 }
 
 type TransferResponse struct {
@@ -69,7 +69,7 @@ type TransferResponse struct {
 type ScheduleRequest struct {
 	AccountNumber    string    `json:"accountNumber" binding:"required"`
 	RecipientAccount string    `json:"recipientAccount" binding:"required"`
-	Amount           float64   `json:"amount" binding:"required"`
+	Amount           int64     `json:"amount" binding:"required"`
 	Currency         string    `json:"currency" binding:"required"`
 	Note             string    `json:"note"`
 	Schedule         string    `json:"schedule" binding:"required"` // "once" or "monthly"
@@ -195,7 +195,7 @@ func (h *Handler) CreateTransfer(c *gin.Context) {
 	}
 
 	// 0. validate account balance
-	var balance float64
+	var balance int64
 	err := h.db.QueryRow(`
         SELECT balance
         FROM accounts
@@ -372,8 +372,8 @@ func main() {
             account_number TEXT PRIMARY KEY,
             type TEXT NOT NULL DEFAULT '',
             account_name TEXT NOT NULL DEFAULT '',
-            balance REAL NOT NULL DEFAULT 0,
-            available_balance REAL NOT NULL DEFAULT 0,
+            balance INTEGER NOT NULL DEFAULT 0,
+            available_balance INTEGER NOT NULL DEFAULT 0,
             currency TEXT NOT NULL DEFAULT 'THB'
         )
         `)
@@ -389,7 +389,7 @@ func main() {
             to_account_name TEXT NOT NULL DEFAULT '',
             to_bank TEXT,
             type TEXT NOT NULL DEFAULT '',
-            amount REAL NOT NULL,
+            amount INTEGER NOT NULL,
             currency TEXT NOT NULL,
             note TEXT,
             transferred_at TEXT NOT NULL
@@ -406,7 +406,7 @@ func main() {
             to_account_name TEXT NOT NULL DEFAULT '',
             to_bank TEXT,
             type TEXT NOT NULL DEFAULT '',
-            amount REAL NOT NULL,
+            amount INTEGER NOT NULL,
             currency TEXT NOT NULL,
             note TEXT,
             status TEXT DEFAULT 'scheduled',
