@@ -13,3 +13,13 @@ export interface Transaction {
   amount: number;
 }
 
+export type Bank = "SCB" | "KTB" | "KBank"
+
+export interface Schedule {
+  toBank: Bank;
+  toAccount: string;
+  toAccountName: string;
+  amount: number;
+  date: string;
+}
+

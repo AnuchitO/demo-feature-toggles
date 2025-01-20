@@ -38,13 +38,24 @@ type Transaction struct {
 	TransferredAt        time.Time `json:"transferredAt"`
 }
 
+type Schedule struct {
+	ScheduleID           string    `json:"scheduleId"`
+	SenderAccount        string    `json:"senderAccount"`
+	RecipientAccount     string    `json:"toAccount"`
+	RecipientAccountName string    `json:"toAccountName"`
+	ReceiptBank          string    `json:"toBank"`
+	Amount               float64   `json:"amount"`
+	Note                 string    `json:"note"`
+	ScheduleDate         time.Time `json:"date"`
+}
+
 // Request & Response Structs
 type TransferRequest struct {
 	AccountNumber    string  `json:"accountNumber" binding:"required"`
 	RecipientAccount string  `json:"recipientAccount" binding:"required"`
 	Amount           float64 `json:"amount" binding:"required"`
 	Currency         string  `json:"currency" binding:"required"`
-	note             string  `json:"note"`
+	Note             string  `json:"note"`
 }
 
 type TransferResponse struct {
@@ -58,7 +69,7 @@ type ScheduleRequest struct {
 	RecipientAccount string    `json:"recipientAccount" binding:"required"`
 	Amount           float64   `json:"amount" binding:"required"`
 	Currency         string    `json:"currency" binding:"required"`
-	note             string    `json:"note"`
+	Note             string    `json:"note"`
 	Schedule         string    `json:"schedule" binding:"required"` // "once" or "monthly"
 	ScheduleDate     time.Time `json:"scheduleDate" binding:"required"`
 	EndDate          time.Time `json:"endDate"`
@@ -131,6 +142,44 @@ func (h *Handler) GetTransactions(c *gin.Context) {
 	c.JSON(http.StatusOK, transactions)
 }
 
+func (h *Handler) GetSchedules(c *gin.Context) {
+	accountNo := c.Param("accountNumber")
+	rows, err := h.db.Query(`
+        SELECT schedule_id, sender_account, recipient_account, recipient_account_name, receipt_bank, amount, note, schedule_date
+        FROM schedules
+        WHERE sender_account = $1
+        AND status = 'scheduled'
+        `, accountNo)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get schedules"})
+		return
+	}
+	defer rows.Close()
+
+	var schedules []Schedule
+	for rows.Next() {
+		var sch Schedule
+		var scheduleDate string
+		err := rows.Scan(&sch.ScheduleID, &sch.SenderAccount, &sch.RecipientAccount, &sch.RecipientAccountName, &sch.ReceiptBank, &sch.Amount, &sch.Note, &scheduleDate)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get schedules"})
+			return
+		}
+		sd, err := time.Parse("2006-01-02 15:04:05", scheduleDate)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get schedules"})
+			return
+		}
+		sch.ScheduleDate = sd
+		schedules = append(schedules, sch)
+	}
+
+	c.JSON(http.StatusOK, schedules)
+}
+
 func transactionID() string {
 	rd := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return fmt.Sprintf("TXN%v", rd.Intn(1000000000))
@@ -172,7 +221,8 @@ func (h *Handler) CreateTransfer(c *gin.Context) {
 	_, err = tx.Exec(`
         INSERT INTO transactions (transaction_id, sender_account, recipient_account, amount, currency, note, transferred_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-		txID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.note, stamp)
+		txID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.Note, stamp)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
 		return
@@ -225,7 +275,7 @@ func (h *Handler) ScheduleTransfer(c *gin.Context) {
 		_, err := h.db.Exec(`
         INSERT INTO schedules (schedule_id, sender_account, recipient_account, amount, currency, note, status, schedule, schedule_date, end_date)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
-			schID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.note, status, req.Schedule, req.ScheduleDate, req.EndDate)
+			schID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.Note, status, req.Schedule, req.ScheduleDate, req.EndDate)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to schedule transfer"})
 			return
@@ -250,7 +300,7 @@ func (h *Handler) ScheduleTransfer(c *gin.Context) {
 		_, err := h.db.Exec(`
         INSERT INTO schedules (schedule_id, sender_account, recipient_account, amount, currency, note, status, schedule, schedule_date, end_date)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
-			schID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.note, status, req.Schedule, req.ScheduleDate, req.EndDate)
+			schID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.Note, status, req.Schedule, req.ScheduleDate, req.EndDate)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to schedule transfer"})
 			return
@@ -370,11 +420,11 @@ func main() {
 	}
 
 	_, err = db.Exec(`
-        INSERT INTO schedules (schedule_id, sender_account, recipient_account, receipt_bank, amount, currency, type, note, schedule, schedule_date, end_date)
+        INSERT INTO schedules (schedule_id, sender_account, recipient_account, recipient_account_name, receipt_bank, amount, currency, type, note, schedule, schedule_date, end_date)
         VALUES
-            ('SCH123456789', '111-111-111', '222-222-222', 'KTB', -1899900, 'THB', 'Transfer out', 'Breakfast', 'once', '2021-09-01 12:00:00', '2021-09-01 12:00:00'),
-            ('SCH987654321', '111-111-111', '333-333-333', 'SCB', -2499850, 'THB', 'Transfer out', 'Lunch', 'once', '2021-09-01 12:00:00', '2021-09-01 12:00:00'),
-            ('SCH123456789', '111-111-111', '444-444-444', 'KBank', -2398825, 'THB', 'Transfer out', 'Dinner', 'once', '2021-09-01 12:00:00', '2021-09-01 12:00:00')
+            ('SCH123456789', '111-111-111', '222-222-222', 'MaiThai', 'KTB', -1899900, 'THB', 'Transfer out', 'Breakfast', 'once', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
+            ('SCH987654321', '111-111-111', '333-333-333', 'LaumPlearn', 'SCB', -2499850, 'THB', 'Transfer out', 'Lunch', 'once', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
+            ('SCH123434267', '111-111-111', '444-444-444', 'Laumcing', 'KBank', -2398825, 'THB', 'Transfer out', 'Dinner', 'once', '2025-09-01 12:00:00', '2030-09-01 12:00:00')
         ON CONFLICT DO NOTHING;
     `)
 	if err != nil {
@@ -428,8 +478,8 @@ func main() {
 	// Routes
 	router.GET("/accounts/:accountNumber/balances", h.GetBalance)
 	router.GET("accounts/:accountNumber/transactions", h.GetTransactions)
+	router.GET("accounts/:accountNumber/schedules", h.GetSchedules)
 	router.POST("/transfers", h.CreateTransfer)
-	router.POST("/schedules", h.ScheduleTransfer)
 
 	router.GET("/features", func(c *gin.Context) {
 		c.JSON(http.StatusOK, firebase.AllConfigs())
