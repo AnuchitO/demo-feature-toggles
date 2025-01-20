@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState } from 'react'
 import { MonthlyDropdown } from './MonthlyDropdown'
-import { commaSeparated, satangToBaht } from './formater'
+import { commaSeparated, satangToBaht, formatDate } from './formater'
 import { fetchAccountTransactions } from './services/accounts'
 import type { Transaction } from './types/account'
 
@@ -17,7 +17,7 @@ export const TransactionItem = ({ type = "Activity", date = "18 Jan 2025 15:03",
         <p className="font-thin text-gray text-sm font-os">{type}</p>
       </div>
       <div className="flex flex-col text-right">
-        <p className="font-thin text-gray-400 text-xs/6 tracking-tighter font-os">{date}</p>
+        <p className="font-thin text-gray-400 text-xs/6 tracking-tighter font-os">{formatDate(date)}</p>
         {amount >= 0 && <p className="font-thin text-green-400 text-sm font-os">+{commaSeparated(satangToBaht(amount))}</p>}
         {amount < 0 && <p className="font-thin text-red-400 text-sm font-os">{commaSeparated(satangToBaht(amount))}</p>}
       </div>

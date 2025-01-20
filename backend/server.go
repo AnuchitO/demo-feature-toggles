@@ -28,6 +28,7 @@ type Account struct {
 
 type Transaction struct {
 	TransactionID string    `json:"transactionId"`
+	AccountNumber string    `json:"accountNumber"`
 	FromAccount   string    `json:"fromAccount"`
 	ToAccount     string    `json:"toAccount"`
 	ToAccountName string    `json:"toAccountName"`
@@ -36,7 +37,7 @@ type Transaction struct {
 	Amount        int64     `json:"amount"`
 	Currency      string    `json:"currency"`
 	Note          string    `json:"note"`
-	TransferredAt time.Time `json:"transferredAt"`
+	TransferredAt time.Time `json:"date"`
 }
 
 type Schedule struct {
@@ -107,12 +108,50 @@ func (h *Handler) GetBalance(c *gin.Context) {
 	c.JSON(http.StatusOK, account)
 }
 
+func (h *Handler) GetAllTransactions(c *gin.Context) {
+	rows, err := h.db.Query(`
+        SELECT transaction_id, account_number, from_account, to_account, to_account_name, to_bank, type, amount, currency, note, transferred_at
+        FROM transactions
+        ORDER BY transferred_at DESC
+    `)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get transactions"})
+		return
+	}
+
+	defer rows.Close()
+
+	var transactions []Transaction
+	for rows.Next() {
+		var txn Transaction
+		var transferredAt string
+		err := rows.Scan(&txn.TransactionID, &txn.AccountNumber, &txn.FromAccount, &txn.ToAccount, &txn.ToAccountName, &txn.ToBank, &txn.Type, &txn.Amount, &txn.Currency, &txn.Note, &transferredAt)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get transactions"})
+			return
+		}
+		at, err := time.Parse("2006-01-02 15:04:05", transferredAt)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get transactions"})
+			return
+		}
+		txn.TransferredAt = at
+		transactions = append(transactions, txn)
+	}
+
+	c.JSON(http.StatusOK, transactions)
+}
+
 func (h *Handler) GetTransactions(c *gin.Context) {
 	accountNo := c.Param("accountNumber")
 	rows, err := h.db.Query(`
-        SELECT transaction_id, from_account, to_account, to_account_name, to_bank, type, amount, currency, note, transferred_at
+        SELECT transaction_id, account_number, from_account, to_account, to_account_name, to_bank, type, amount, currency, note, transferred_at
         FROM transactions
-        WHERE from_account = $1
+        WHERE account_number = $1
+        ORDER BY transferred_at DESC
         `, accountNo)
 	if err != nil {
 		log.Println(err)
@@ -125,7 +164,7 @@ func (h *Handler) GetTransactions(c *gin.Context) {
 	for rows.Next() {
 		var txn Transaction
 		var transferredAt string
-		err := rows.Scan(&txn.TransactionID, &txn.FromAccount, &txn.ToAccount, &txn.ToAccountName, &txn.ToBank, &txn.Type, &txn.Amount, &txn.Currency, &txn.Note, &transferredAt)
+		err := rows.Scan(&txn.TransactionID, &txn.AccountNumber, &txn.FromAccount, &txn.ToAccount, &txn.ToAccountName, &txn.ToBank, &txn.Type, &txn.Amount, &txn.Currency, &txn.Note, &transferredAt)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get transactions"})
@@ -149,7 +188,7 @@ func (h *Handler) GetSchedules(c *gin.Context) {
 	rows, err := h.db.Query(`
         SELECT schedule_id, from_account, to_account, to_account_name, to_bank, amount, note, schedule_date
         FROM schedules
-        WHERE from_account = $1
+        WHERE account_number = $1
         AND status = 'scheduled'
         `, accountNo)
 	if err != nil {
@@ -235,9 +274,12 @@ func (h *Handler) CreateTransfer(c *gin.Context) {
 	}
 
 	_, err = tx.Exec(`
-        INSERT INTO transactions (transaction_id, from_account, to_account, to_account_name, to_bank, amount, currency, type, note, transferred_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-		txID, req.FromAccount, req.ToAccount, toAccountName, req.ToBank, req.Amount, req.Currency, "Transfer out", req.Note, stamp)
+        INSERT INTO transactions (transaction_id, account_number, from_account, to_account, to_account_name, to_bank, amount, currency, type, note, transferred_at)
+        VALUES
+            ($1, $2, $2, $3, $4, $5, $6, $7, $8, $9, $10),
+            ($1, $3, $2, $3, $4, $5, $11, $7, $12, $9, $10)
+        `,
+		txID, req.FromAccount, req.ToAccount, toAccountName, req.ToBank, -req.Amount, req.Currency, "Transfer out", req.Note, stamp, req.Amount, "Transfer in")
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
@@ -383,7 +425,9 @@ func main() {
 
 	_, err = db.Exec(`
         CREATE TABLE IF NOT EXISTS transactions (
-            transaction_id TEXT PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            transaction_id TEXT NOT NULL,
+            account_number TEXT NOT NULL,
             from_account TEXT NOT NULL,
             to_account TEXT NOT NULL,
             to_account_name TEXT NOT NULL DEFAULT '',
@@ -401,6 +445,7 @@ func main() {
 	_, err = db.Exec(`
         CREATE TABLE IF NOT EXISTS schedules (
             schedule_id TEXT PRIMARY KEY,
+            account_number TEXT NOT NULL,
             from_account TEXT NOT NULL,
             to_account TEXT NOT NULL,
             to_account_name TEXT NOT NULL DEFAULT '',
@@ -435,14 +480,27 @@ func main() {
 	}
 
 	_, err = db.Exec(`
-        INSERT INTO transactions (transaction_id, from_account, to_account, to_bank, amount, currency, type, note, transferred_at)
+        INSERT INTO transactions (transaction_id, account_number, from_account, to_account, to_bank, amount, currency, type, note, transferred_at)
         VALUES
-            ('TXN123456789', '111-111-111', '222-222-222', 'KTB',  98982500, 'THB', 'Transfer in', 'Lunch', '2025-01-10 14:22:00'),
-            ('TXN120456799', '111-111-111', '444-444-444', 'KBank', -2300000, 'THB', 'Transfer out', 'Dinner', '2025-01-10 14:22:00'),
-            ('TXN987634521', '111-111-111', '333-333-333', 'SCB',  2499850, 'THB', 'Transfer in', 'Dinner', '2021-09-01 18:00:00'),
-            ('TXN123416629', '111-111-111', '222-222-222', 'KTB', -399900, 'THB', 'Transfer out', 'Breakfast', '2025-01-10 14:22:00'),
-            ('TXN987654321', '222-222-222', '333-333-333', 'SCB', -2394350, 'THB', 'Transfer out', 'Dinner', '2021-09-01 18:00:00'),
-            ('TXN123456789', '111-111-111', '444-444-444', 'KBank',  2499800, 'THB', 'Transfer in', 'Lunch', '2025-01-10 14:22:00')
+            ('TXN123456789', '111-111-111', '111-111-111', '222-222-222', 'KTB',  98982500, 'THB', 'Transfer in', 'Lunch', '2024-11-10 14:22:00'),
+            ('TXN123456789', '222-222-222', '111-111-111', '222-222-222', 'KTB', -98982500, 'THB', 'Transfer out', 'Lunch', '2024-11-10 14:22:00'),
+
+            ('TXN120456799', '111-111-111', '111-111-111', '444-444-444', 'KBank', -2300000, 'THB', 'Transfer out', 'Dinner', '2024-12-10 14:22:00'),
+            ('TXN120456799', '444-444-444', '111-111-111', '444-444-444', 'KBank',  2300000, 'THB', 'Transfer in', 'Dinner', '2024-12-10 14:22:00'),
+
+
+            ('TXN987634521', '111-111-111', '111-111-111', '333-333-333', 'SCB',  2499850, 'THB', 'Transfer in', 'Dinner', '2025-01-13 18:00:00'),
+            ('TXN987634521', '333-333-333', '111-111-111', '333-333-333', 'SCB', -2499850, 'THB', 'Transfer out', 'Dinner', '2025-01-13 18:00:00'),
+
+
+            ('TXN123416629', '111-111-111', '111-111-111', '222-222-222', 'KTB', -399900, 'THB', 'Transfer out', 'Breakfast', '2025-01-14 14:22:00'),
+            ('TXN123416629', '222-222-222', '111-111-111', '222-222-222', 'KTB',  399900, 'THB', 'Transfer in', 'Breakfast', '2025-01-14 14:22:00'),
+
+            ('TXN987654321', '222-222-222', '222-222-222', '333-333-333', 'SCB', -2394350, 'THB', 'Transfer out', 'Dinner', '2021-09-01 18:00:00'),
+            ('TXN987654321', '333-333-333', '222-222-222', '333-333-333', 'SCB',  2394350, 'THB', 'Transfer in', 'Dinner', '2021-09-01 18:00:00'),
+
+            ('TXN123434267', '111-111-111', '111-111-111', '444-444-444', 'KBank', -2499800, 'THB', 'Transfer out', 'Lunch', '2025-01-10 14:22:00'),
+            ('TXN123456789', '444-444-444', '111-111-111', '444-444-444', 'KBank',  2499800, 'THB', 'Transfer in', 'Lunch', '2025-01-10 14:22:00')
         ON CONFLICT DO NOTHING;
     `)
 	if err != nil {
@@ -450,11 +508,11 @@ func main() {
 	}
 
 	_, err = db.Exec(`
-        INSERT INTO schedules (schedule_id, from_account, to_account, to_account_name, to_bank, amount, currency, type, note, schedule, schedule_date, end_date)
+        INSERT INTO schedules (schedule_id, account_number, from_account, to_account, to_account_name, to_bank, amount, currency, type, note, schedule, schedule_date, end_date)
         VALUES
-            ('SCH123456789', '111-111-111', '222-222-222', 'MaiThai', 'KTB', -1899900, 'THB', 'Transfer out', 'Breakfast', 'once', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
-            ('SCH987654321', '111-111-111', '333-333-333', 'LaumPlearn', 'SCB', -2499850, 'THB', 'Transfer out', 'Lunch', 'once', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
-            ('SCH123434267', '111-111-111', '444-444-444', 'Laumcing', 'KBank', -2398825, 'THB', 'Transfer out', 'Dinner', 'once', '2025-09-01 12:00:00', '2030-09-01 12:00:00')
+            ('SCH123456789', '111-111-111', '111-111-111', '222-222-222', 'MaiThai', 'KTB', -1899900, 'THB', 'Transfer out', 'Breakfast', 'once', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
+            ('SCH987654321', '111-111-111', '111-111-111', '333-333-333', 'LaumPlearn', 'SCB', -2499850, 'THB', 'Transfer out', 'Lunch', 'once', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
+            ('SCH123434267', '111-111-111', '111-111-111', '444-444-444', 'Laumcing', 'KBank', -2398825, 'THB', 'Transfer out', 'Dinner', 'once', '2025-09-01 12:00:00', '2030-09-01 12:00:00')
         ON CONFLICT DO NOTHING;
     `)
 	if err != nil {
@@ -509,6 +567,7 @@ func main() {
 	router.GET("/accounts/:accountNumber/balances", h.GetBalance)
 	router.GET("/accounts/:accountNumber/transactions", h.GetTransactions)
 	router.GET("/accounts/:accountNumber/schedules", h.GetSchedules)
+	router.GET("/transactions", h.GetAllTransactions)
 
 	router.POST("/accounts/:accountNumber/transfers", h.CreateTransfer)
 
