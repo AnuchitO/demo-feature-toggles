@@ -26,27 +26,27 @@ type Account struct {
 }
 
 type Transaction struct {
-	TransactionID        string    `json:"transactionId"`
-	SenderAccount        string    `json:"senderAccount"`
-	RecipientAccount     string    `json:"toAccount"`
-	RecipientAccountName string    `json:"toAccountName"`
-	ReceiptBank          string    `json:"toBank"`
-	Type                 string    `json:"type"`
-	Amount               float64   `json:"amount"`
-	Currency             string    `json:"currency"`
-	Note                 string    `json:"note"`
-	TransferredAt        time.Time `json:"transferredAt"`
+	TransactionID string    `json:"transactionId"`
+	FromAccount   string    `json:"fromAccount"`
+	ToAccount     string    `json:"toAccount"`
+	ToAccountName string    `json:"toAccountName"`
+	ToBank        string    `json:"toBank"`
+	Type          string    `json:"type"`
+	Amount        float64   `json:"amount"`
+	Currency      string    `json:"currency"`
+	Note          string    `json:"note"`
+	TransferredAt time.Time `json:"transferredAt"`
 }
 
 type Schedule struct {
-	ScheduleID           string    `json:"scheduleId"`
-	SenderAccount        string    `json:"senderAccount"`
-	RecipientAccount     string    `json:"toAccount"`
-	RecipientAccountName string    `json:"toAccountName"`
-	ReceiptBank          string    `json:"toBank"`
-	Amount               float64   `json:"amount"`
-	Note                 string    `json:"note"`
-	ScheduleDate         time.Time `json:"date"`
+	ScheduleID    string    `json:"scheduleId"`
+	FromAccount   string    `json:"fromAccount"`
+	ToAccount     string    `json:"toAccount"`
+	ToAccountName string    `json:"toAccountName"`
+	ToBank        string    `json:"toBank"`
+	Amount        float64   `json:"amount"`
+	Note          string    `json:"note"`
+	ScheduleDate  time.Time `json:"date"`
 }
 
 // Request & Response Structs
@@ -108,9 +108,9 @@ func (h *Handler) GetBalance(c *gin.Context) {
 func (h *Handler) GetTransactions(c *gin.Context) {
 	accountNo := c.Param("accountNumber")
 	rows, err := h.db.Query(`
-        SELECT transaction_id, sender_account, recipient_account, recipient_account_name, receipt_bank, type, amount, currency, note, transferred_at
+        SELECT transaction_id, from_account, to_account, to_account_name, to_bank, type, amount, currency, note, transferred_at
         FROM transactions
-        WHERE sender_account = $1
+        WHERE from_account = $1
         `, accountNo)
 	if err != nil {
 		log.Println(err)
@@ -123,7 +123,7 @@ func (h *Handler) GetTransactions(c *gin.Context) {
 	for rows.Next() {
 		var txn Transaction
 		var transferredAt string
-		err := rows.Scan(&txn.TransactionID, &txn.SenderAccount, &txn.RecipientAccount, &txn.RecipientAccountName, &txn.ReceiptBank, &txn.Type, &txn.Amount, &txn.Currency, &txn.Note, &transferredAt)
+		err := rows.Scan(&txn.TransactionID, &txn.FromAccount, &txn.ToAccount, &txn.ToAccountName, &txn.ToBank, &txn.Type, &txn.Amount, &txn.Currency, &txn.Note, &transferredAt)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get transactions"})
@@ -145,9 +145,9 @@ func (h *Handler) GetTransactions(c *gin.Context) {
 func (h *Handler) GetSchedules(c *gin.Context) {
 	accountNo := c.Param("accountNumber")
 	rows, err := h.db.Query(`
-        SELECT schedule_id, sender_account, recipient_account, recipient_account_name, receipt_bank, amount, note, schedule_date
+        SELECT schedule_id, from_account, to_account, to_account_name, to_bank, amount, note, schedule_date
         FROM schedules
-        WHERE sender_account = $1
+        WHERE from_account = $1
         AND status = 'scheduled'
         `, accountNo)
 	if err != nil {
@@ -161,7 +161,7 @@ func (h *Handler) GetSchedules(c *gin.Context) {
 	for rows.Next() {
 		var sch Schedule
 		var scheduleDate string
-		err := rows.Scan(&sch.ScheduleID, &sch.SenderAccount, &sch.RecipientAccount, &sch.RecipientAccountName, &sch.ReceiptBank, &sch.Amount, &sch.Note, &scheduleDate)
+		err := rows.Scan(&sch.ScheduleID, &sch.FromAccount, &sch.ToAccount, &sch.ToAccountName, &sch.ToBank, &sch.Amount, &sch.Note, &scheduleDate)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get schedules"})
@@ -219,10 +219,9 @@ func (h *Handler) CreateTransfer(c *gin.Context) {
 	}
 
 	_, err = tx.Exec(`
-        INSERT INTO transactions (transaction_id, sender_account, recipient_account, amount, currency, note, transferred_at)
+        INSERT INTO transactions (transaction_id, from_account, to_account, amount, currency, note, transferred_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 		txID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.Note, stamp)
-
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
 		return
@@ -273,7 +272,7 @@ func (h *Handler) ScheduleTransfer(c *gin.Context) {
 		status := "scheduled"
 
 		_, err := h.db.Exec(`
-        INSERT INTO schedules (schedule_id, sender_account, recipient_account, amount, currency, note, status, schedule, schedule_date, end_date)
+        INSERT INTO schedules (schedule_id, from_account, to_account, amount, currency, note, status, schedule, schedule_date, end_date)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
 			schID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.Note, status, req.Schedule, req.ScheduleDate, req.EndDate)
 		if err != nil {
@@ -298,7 +297,7 @@ func (h *Handler) ScheduleTransfer(c *gin.Context) {
 		status := "scheduled"
 
 		_, err := h.db.Exec(`
-        INSERT INTO schedules (schedule_id, sender_account, recipient_account, amount, currency, note, status, schedule, schedule_date, end_date)
+        INSERT INTO schedules (schedule_id, from_account, to_account, amount, currency, note, status, schedule, schedule_date, end_date)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
 			schID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.Note, status, req.Schedule, req.ScheduleDate, req.EndDate)
 		if err != nil {
@@ -354,10 +353,10 @@ func main() {
 	_, err = db.Exec(`
         CREATE TABLE IF NOT EXISTS transactions (
             transaction_id TEXT PRIMARY KEY,
-            sender_account TEXT NOT NULL,
-            recipient_account TEXT NOT NULL,
-            recipient_account_name TEXT NOT NULL DEFAULT '',
-            receipt_bank TEXT,
+            from_account TEXT NOT NULL,
+            to_account TEXT NOT NULL,
+            to_account_name TEXT NOT NULL DEFAULT '',
+            to_bank TEXT,
             type TEXT NOT NULL DEFAULT '',
             amount REAL NOT NULL,
             currency TEXT NOT NULL,
@@ -371,10 +370,10 @@ func main() {
 	_, err = db.Exec(`
         CREATE TABLE IF NOT EXISTS schedules (
             schedule_id TEXT PRIMARY KEY,
-            sender_account TEXT NOT NULL,
-            recipient_account TEXT NOT NULL,
-            recipient_account_name TEXT NOT NULL DEFAULT '',
-            receipt_bank TEXT,
+            from_account TEXT NOT NULL,
+            to_account TEXT NOT NULL,
+            to_account_name TEXT NOT NULL DEFAULT '',
+            to_bank TEXT,
             type TEXT NOT NULL DEFAULT '',
             amount REAL NOT NULL,
             currency TEXT NOT NULL,
@@ -405,7 +404,7 @@ func main() {
 	}
 
 	_, err = db.Exec(`
-        INSERT INTO transactions (transaction_id, sender_account, recipient_account, receipt_bank, amount, currency, type, note, transferred_at)
+        INSERT INTO transactions (transaction_id, from_account, to_account, to_bank, amount, currency, type, note, transferred_at)
         VALUES
             ('TXN123456789', '111-111-111', '222-222-222', 'KTB',  98982500, 'THB', 'Transfer in', 'Lunch', '2025-01-10 14:22:00'),
             ('TXN120456799', '111-111-111', '444-444-444', 'KBank', -2300000, 'THB', 'Transfer out', 'Dinner', '2025-01-10 14:22:00'),
@@ -420,7 +419,7 @@ func main() {
 	}
 
 	_, err = db.Exec(`
-        INSERT INTO schedules (schedule_id, sender_account, recipient_account, recipient_account_name, receipt_bank, amount, currency, type, note, schedule, schedule_date, end_date)
+        INSERT INTO schedules (schedule_id, from_account, to_account, to_account_name, to_bank, amount, currency, type, note, schedule, schedule_date, end_date)
         VALUES
             ('SCH123456789', '111-111-111', '222-222-222', 'MaiThai', 'KTB', -1899900, 'THB', 'Transfer out', 'Breakfast', 'once', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
             ('SCH987654321', '111-111-111', '333-333-333', 'LaumPlearn', 'SCB', -2499850, 'THB', 'Transfer out', 'Lunch', 'once', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
