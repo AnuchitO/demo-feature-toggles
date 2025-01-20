@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { NumericFormat } from 'react-number-format'
 import { useNavigate } from 'react-router-dom'
 import { Input, Field, Label, Select, Switch } from '@headlessui/react'
@@ -45,7 +45,7 @@ export const Number = ({ label, onChange }: NumberProps) => {
   const defaultValue = '0.00'
   const [value, setValue] = useState(defaultValue)
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value: number = parseFloat(e.target.value)
+    const value: number = parseFloat(e.target.value.replace(/,/g, ''))
     onChange(value)
   }
 
@@ -161,6 +161,10 @@ export function ToAccounts({ onSelect }: ToAccountsProps) {
     setSelectedAccount(value)
     onSelect(value)
   }
+
+  useEffect(() => {
+    onSelect(selectedAccount)
+  }, [selectedAccount])
 
   return (
     <div className="w-full max-w-md px-4 justify-start">
