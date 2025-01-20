@@ -10,7 +10,7 @@ interface TransactionProps {
   amount: number;
 }
 
-const Transaction = ({ type = "Activity", date = "18 Jan 2025 15:03", amount = 0 }: TransactionProps) => {
+export const TransactionItem = ({ type = "Activity", date = "18 Jan 2025 15:03", amount = 0 }: TransactionProps) => {
   return <>
     <div className="flex justify-between m-4">
       <div className="flex flex-col text-left">
@@ -65,7 +65,7 @@ export const Transactions = ({ accountNumber = '111-111-111' }) => {
     <div className="w-full h-full min-w-100 min-h-40 rounded-lg shadow-lg" >
       {transactions.map((transaction, index) => {
         return <Fragment key={index}>
-          <Transaction type={transaction.type} date={transaction.date} amount={transaction.amount} />
+          <TransactionItem type={transaction.type} date={transaction.date} amount={transaction.amount} />
         </Fragment>
       })}
     </div>
