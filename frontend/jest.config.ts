@@ -14,7 +14,8 @@ module.exports = {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
       tsconfig: 'tsconfig.json',
     }],
-    '^.+\\.(js|jsx)$': 'babel-jest'
+    '^.+\\.(js|jsx)$': 'babel-jest',
+    '^.+\\.svg$': 'jest-transform-stub', // Transform SVG files using jest-transform-stub
   },
   transformIgnorePatterns: [
     '/node_modules/(?!(@mui|@headlessui|@heroicons)/)',
