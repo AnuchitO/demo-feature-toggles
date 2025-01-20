@@ -14,3 +14,7 @@ export const commaSeparated = (value: number) => {
   });
 }
 
+export const satangToBaht = (satang: number) => {
+  return satang / 100;
+}
+

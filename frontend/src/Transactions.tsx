@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState } from 'react'
 import { MonthlyDropdown } from './MonthlyDropdown'
-import { commaSeparated } from './formater'
+import { commaSeparated, satangToBaht } from './formater'
 import { fetchAccountTransactions } from './services/accounts'
 import type { Transaction } from './types/account'
 
@@ -8,10 +8,6 @@ interface TransactionProps {
   type: string;
   date: string;
   amount: number;
-}
-
-const satangToBaht = (satang: number) => {
-  return satang / 100;
 }
 
 const Transaction = ({ type = "Activity", date = "18 Jan 2025 15:03", amount = 0 }: TransactionProps) => {
@@ -33,13 +29,6 @@ export const Transactions = ({ accountNumber = '111-111-111' }) => {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  /*
-    useEffect(() => {
-      setTransactions([
-        { type: "Transfer in", date: "10 Jan 2025 14:22", amount: 498200 },
-        { type: "Transfer out", date: "16 Jan 2025 11:35", amount: -293000 },
-      ])
-    }, []) */
 
   useEffect(() => {
     const loadAccount = async () => {
