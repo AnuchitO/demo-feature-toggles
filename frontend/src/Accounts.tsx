@@ -1,15 +1,7 @@
 import { useEffect, useState } from 'react';
 import { formatCurrency } from './formater';
-import { api } from './services/api';
-
-interface Account {
-  branch: string;
-  number: string;
-  type: string;
-  name: string;
-  currentBalance: number;
-  availableBalance: number;
-}
+import { fetchAccountBalances } from './services/accounts';
+import { Account } from './types/account';
 
 interface BalanceProps {
   account: Account;
@@ -51,16 +43,6 @@ export const Balance: React.FC<BalanceProps> = ({ account = defaultAccount }) =>
   </>
 };
 
-const fetchAccount = async (accountNumber: string): Promise<Account> => {
-  try {
-    const response = await api.get<Account>(`/accounts/${accountNumber}/balances`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching account:', error);
-    throw error;
-  }
-};
-
 export const Accounts: React.FC = () => {
   const [account, setAccount] = useState<Account>(defaultAccount);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,7 +52,7 @@ export const Accounts: React.FC = () => {
     const loadAccount = async () => {
       try {
         setIsLoading(true);
-        const data = await fetchAccount('111-111-111');
+        const data = await fetchAccountBalances('111-111-111');
         setAccount(data);
       } catch (err) {
         console.error('Failed to load account data:', err);
