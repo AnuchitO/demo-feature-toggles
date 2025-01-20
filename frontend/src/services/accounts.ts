@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { Account, Transaction, Schedule } from '../types/account';
+import type { Account, Transaction, Schedule, ScheduleTransferPayload, ScheduleTransferResponse } from '../types/account';
 
 export const fetchAccountBalances = async (accountNumber: string): Promise<Account> => {
   try {
@@ -57,24 +57,9 @@ export const transfer = async (payload: TransferPayload): Promise<TransferRespon
   }
 }
 
-export interface ScheduleTransferPayload {
-  fromAccount: string;
-  toAccount: string;
-  toBank: string;
-  note: string;
-  type: string;
-  amount: number;
-  scheduleDate: string;
-  endDate: string;
-}
-
-export interface ScheduleTransferResponse {
-  scheduleID: string;
-}
-
 export const scheduleTransfer = async (payload: ScheduleTransferPayload): Promise<ScheduleTransferResponse> => {
   try {
-    const response = await api.post<ScheduleTransferResponse>('/schedule-transfer', payload);
+    const response = await api.post<ScheduleTransferResponse>(`/accounts/${payload.fromAccount}/schedules`, payload);
     return response.data;
   } catch (error) {
     console.error('Error scheduling transfer:', error);

@@ -23,3 +23,22 @@ export interface Schedule {
   date: string;
 }
 
+export interface ScheduleTransferPayload {
+  fromAccount: string;
+  toAccount: string;
+  toBank: string;
+  amount: number;
+  currency: string;
+  note: string;
+  schedule: string; // 'ONCE' | 'MONTHLY'
+  startDate: string;
+  endDate: string;
+}
+
+export interface ScheduleTransferResponse {
+  scheduleID: string;
+  status: string;
+  nextRunDate: string;
+  endDate: string;
+  scheduleType: string;
+}

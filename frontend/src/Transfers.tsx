@@ -13,6 +13,8 @@ import { Days, MonthDatePicker, SingleDatePicker } from './DatePicker'
 import { transfer, scheduleTransfer } from './services/accounts'
 import { bahtToSatang } from './formater'
 
+import type { ScheduleTransferPayload } from './types/account'
+
 interface TextProps {
   label: string;
   onChange: () => void;
@@ -81,11 +83,27 @@ export const Number = ({ label, onChange, disabled = false }: NumberProps) => {
   )
 }
 
-export function SetSchedule({ onChange, disabled = false }: { onChange: (value: boolean) => void, disabled?: boolean }) {
-  const [enabled, setEnabled] = useState(false)
+
+interface ScheduleValues {
+  scheduleDate: string;
+  day: string;
+  startDate: string;
+  endDate: string;
+}
+
+interface SetScheduleProps {
+  onChange: (value: boolean) => void;
+  disabled?: boolean;
+  setActiveTab: (value: string) => void;
+  values: ScheduleValues;
+  setValues: (value: ScheduleValues) => void;
+}
+
+export function SetSchedule({ onChange, disabled = false, setActiveTab, setValues, values }: SetScheduleProps) {
+  const [active, setActive] = useState(false)
 
   const handleToggle = (value: boolean) => {
-    setEnabled(value)
+    setActive(value)
     onChange(value)
   }
 
@@ -97,7 +115,7 @@ export function SetSchedule({ onChange, disabled = false }: { onChange: (value: 
             <Label className="text-sm/6 font-medium text-white flex">Schedule</Label>
             <Switch
               disabled={disabled}
-              checked={enabled}
+              checked={active}
               onChange={handleToggle}
               className={clsx(
                 `${disabled ? 'bg-neutral-900' : 'bg-white/5'}`,
@@ -112,21 +130,29 @@ export function SetSchedule({ onChange, disabled = false }: { onChange: (value: 
           </div>
         </Field >
       </div >
-      {enabled && <ScheduleTab />
+      {active && <ScheduleTab setActiveTab={setActiveTab} setValues={setValues} values={values} />
       }
     </>
   )
 }
 
 
-function ScheduleTab() {
+export interface ScheduleTabProps {
+  setActiveTab: (value: string) => void;
+  values: ScheduleValues;
+  setValues: (values: ScheduleValues) => void;
+}
+
+function ScheduleTab({ setActiveTab, setValues, values }: ScheduleTabProps) {
   return (
     <div className="w-full max-w-md">
       <TabGroup>
         <TabList className="flex gap-4 justify-around">
           <Tab className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
+            onClick={() => setActiveTab('ONCE')}
           >Once</Tab>
           <Tab className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
+            onClick={() => setActiveTab('MONTHLY')}
           >Monthly</Tab>
         </TabList>
         <hr className="border-t border-gray-500 mt-1" />
@@ -135,20 +161,20 @@ function ScheduleTab() {
             <div className="flex justify-center w-full mb-2">
               <Field className="flex flex-col items-start w-full">
                 <Label className="mb-2" >Scheduled date</Label>
-                <SingleDatePicker />
+                <SingleDatePicker onChange={date => setValues({ scheduleDate: date, day: "", startDate: "", endDate: "" })} />
               </Field>
             </div>
           </TabPanel>
           <TabPanel>
             <div>
-              <Days />
+              <Days onChange={day => setValues({ ...values, day: day })} />
               <Field className="flex flex-col items-start m-4">
                 <Label className="mb-2">From</Label>
-                <MonthDatePicker />
+                <MonthDatePicker onChange={startDate => setValues({ ...values, startDate: startDate })} />
               </Field>
               <Field className="flex flex-col items-start m-4">
                 <Label className="mb-2">To</Label>
-                <MonthDatePicker />
+                <MonthDatePicker onChange={endDate => setValues({ ...values, endDate: endDate })} />
               </Field>
             </div>
           </TabPanel>
@@ -218,51 +244,6 @@ interface TransferPayload {
   note: string;
 }
 
-interface SchedulePayload {
-  fromAccount: string;
-  toAccount: string;
-  toBank: string;
-  amount: number;
-  currency: string;
-  type: string;
-  note: string;
-  schedule: string; // e.g., 'once', 'daily', etc.
-  scheduleDate: string;
-  endDate: string;
-}
-
-
-export const TransferSkeleton = () => {
-  return (
-    <div>
-      <div className="rounded-2xl shadow-lg min-w-96">
-        <div className="flex flex-col justify-center">
-          <div className="rounded-2xl bg-gray-200 dark:bg-gray-700 h-40 ml-8 mr-8 animate-pulse" />
-        </div>
-        <div className="flex flex-col min-h-80 m-4 ml-8 mr-8">
-          <div className="rounded-2xl shadow-lg">
-            <div className="flex flex-col justify-center space-y-4">
-              <div className="bg-gray-200 dark:bg-gray-700 h-12 rounded-lg" />
-              <div className="bg-gray-200 dark:bg-gray-700 h-12 rounded-lg" />
-              <div className="bg-gray-200 dark:bg-gray-700 h-12 rounded-lg" />
-              <div className="bg-gray-200 dark:bg-gray-700 h-12 rounded-lg" />
-            </div>
-            <div className="flex flex-row justify-center mt-2 space-x-4">
-              <div className="flex-1">
-                <div className="bg-gray-200 dark:bg-gray-700 h-10 rounded-full" />
-              </div>
-              <div className="flex-1">
-                <div className="bg-gray-200 dark:bg-gray-700 h-10 rounded-full" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
 
 const Transfers = () => {
   const navigate = useNavigate()
@@ -271,13 +252,22 @@ const Transfers = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [disabled, setDisabled] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
+  const [isSchedule, setIsSchedule] = useState<boolean>(false)
+  const [activeTab, setActiveTab] = useState<string>('ONCE')
+
 
   const [fromAccount, setFromAccount] = useState<string>('111-111-111')
   const [toAccount, setToAccount] = useState<string>('')
   const [toBank, setToBank] = useState<string>('')
   const [amount, setAmount] = useState<number>(0)
   const [note, setNote] = useState<string>('')
-  const [isSchedule, setIsSchedule] = useState<boolean>(false)
+  const [values, setValues] = useState<ScheduleValues>({
+    scheduleDate: '',
+    day: '',
+    startDate: '',
+    endDate: '',
+  })
+
 
   const onSelectToAccount = (value: string = ":") => {
     const [bank, account] = value.split(':')
@@ -305,6 +295,46 @@ const Transfers = () => {
   const closeDialog = () => {
     setIsOpen(false)
     goBackHome()
+  }
+
+  const handleScheduleTransfer = async () => {
+    setError('')
+    setLoading(true)
+    setDisabled(true)
+
+
+    console.log('values:', values)
+
+    const payload: ScheduleTransferPayload = {
+      fromAccount,
+      toAccount,
+      toBank,
+      amount: bahtToSatang(amount),
+      currency: 'THB',
+      note,
+      schedule: activeTab,
+      startDate: activeTab === "MONTHLY" ? `${values.startDate}-${values.day} 12:00:00` : values.scheduleDate + ' 12:00:00',
+      endDate: activeTab === "MONTHLY" ? `${values.endDate}-${values.day} 12:00:00` : '',
+    }
+
+    console.log('payload:', payload)
+
+    try {
+      const response = await scheduleTransfer(payload)
+      if (response.status === 'SCHEDULED') {
+        console.log('Schedule successful')
+        openDialog()
+      } else {
+        setDisabled(false)
+        setError('Failed to schedule transfer')
+      }
+    } catch (error) {
+      setDisabled(false)
+      setError('Failed to schedule transfer')
+      console.error('Error during API call', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleSubmitTransfer = async () => {
@@ -353,7 +383,7 @@ const Transfers = () => {
               <ToAccounts disabled={disabled} onSelect={onSelectToAccount} />
               <Number disabled={disabled} label="Amount" onChange={(amount) => { setAmount(amount) }} />
               <Text disabled={disabled} label="Note" onChange={(e) => setNote(e.target.value)} />
-              <SetSchedule disabled={disabled} onChange={handleScheduleToggle} />
+              <SetSchedule disabled={disabled} onChange={handleScheduleToggle} setActiveTab={setActiveTab} setValues={setValues} values={values} />
             </div>
             {error && <p className="text-red-400 text-sm">{error}</p>}
             <div className="flex flex-row justify-center mt-2 mb-2">
@@ -361,14 +391,15 @@ const Transfers = () => {
                 <CancelButton disabled={disabled} label="Cancel" onClick={goBackHome} />
               </div>
               <div className="flex third-space">
-                <TransferButton loading={loading} disabled={disabled} label="Confirm Transfer" onClick={handleSubmitTransfer} />
+                {!isSchedule && <TransferButton loading={loading} disabled={disabled} label="Confirm Transfer" onClick={handleSubmitTransfer} />}
+                {isSchedule && <TransferButton loading={loading} disabled={disabled} label="Schedule Transfer" onClick={handleScheduleTransfer} />}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <Dialog
+      {!isSchedule && <Dialog
         isOpen={isOpen}
         onClose={closeDialog}
         title="Transfer Successful"
@@ -381,6 +412,21 @@ const Transfers = () => {
           Got it, thanks!
         </Button>
       </Dialog>
+      }
+      {isSchedule && <Dialog
+        isOpen={isOpen}
+        onClose={closeDialog}
+        title="Schedule Successful"
+        description="Your transfer has been successfully scheduled."
+      >
+        <Button
+          className="inline-flex items-center gap-2 rounded-md bg-gray-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10"
+          onClick={confirmDialog}
+        >
+          Got it, thanks!
+        </Button>
+      </Dialog>
+      }
     </div>
   )
 }

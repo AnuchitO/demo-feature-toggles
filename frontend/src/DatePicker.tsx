@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -15,7 +16,7 @@ interface DatePickerProps {
 }
 
 interface DaysProps {
-  onChange?: (day: string) => void;
+  onChange: (day: string) => void;
   defaultValue?: string;
 }
 
@@ -48,11 +49,14 @@ export const SingleDatePicker: React.FC<DatePickerProps> = ({
   onChange,
   defaultValue = dayjs(),
 }) => {
-  const handleChange = (date: Dayjs | null) => {
-    if (!date) return
-
+  const handleChange = (value: Dayjs | null) => {
+    const date = value || defaultValue;
     onChange(date.format('YYYY-MM-DD'));
   };
+
+  useEffect(() => {
+    onChange(defaultValue.format('YYYY-MM-DD'));
+  }, [defaultValue]);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -73,12 +77,14 @@ export const MonthDatePicker: React.FC<DatePickerProps> = ({
   onChange,
   defaultValue = dayjs(),
 }) => {
-  const handleChange = (date: Dayjs | null) => {
-    onChange(dayjs().format('YYYY-MM-DD'));
-    if (!date) return;
-
-    onChange(date.format('YYYY-MM-DD'));
+  const handleChange = (value: Dayjs | null) => {
+    const date = value || defaultValue;
+    onChange(date.format('YYYY-MM'));
   };
+
+  useEffect(() => {
+    onChange(defaultValue.format('YYYY-MM'));
+  }, [defaultValue]);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -102,8 +108,12 @@ export const Days: React.FC<DaysProps> = ({
   defaultValue = '1'
 }) => {
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    onChange?.(event.target.value);
+    onChange(event.target.value);
   };
+
+  useEffect(() => {
+    onChange(defaultValue);
+  }, [defaultValue]);
 
   const days = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
 

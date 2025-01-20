@@ -71,6 +71,10 @@ func IsEnabled(name string) bool {
 	return v.DefaultValue.Value == "true"
 }
 
+func IsDisabled(name string) bool {
+	return !IsEnabled(name)
+}
+
 func Value(name string) string {
 	v, ok := remoteConfig.Parameters[name]
 	if !ok {

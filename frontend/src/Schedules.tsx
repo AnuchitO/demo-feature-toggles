@@ -81,6 +81,7 @@ export const Schedules = ({ accountNumber = '111-111-111' }) => {
       </p>
     </div>
     <div className="w-full h-full min-w-100 min-h-40 rounded-lg shadow-lg" >
+      {schedules.length === 0 && <div className="text-center p-4 font-os">No scheduled transactions</div>}
       {schedules.map((schedule, index) => {
         return <Fragment key={index}>
           <ScheduleItem key={index} toBank={schedule.toBank} toAccount={schedule.toAccount} toAccountName={schedule.toAccountName} amount={schedule.amount} date={schedule.date} />

@@ -68,22 +68,23 @@ type TransferResponse struct {
 }
 
 type ScheduleRequest struct {
-	AccountNumber    string    `json:"accountNumber" binding:"required"`
-	RecipientAccount string    `json:"recipientAccount" binding:"required"`
-	Amount           int64     `json:"amount" binding:"required"`
-	Currency         string    `json:"currency" binding:"required"`
-	Note             string    `json:"note"`
-	Schedule         string    `json:"schedule" binding:"required"` // "once" or "monthly"
-	ScheduleDate     time.Time `json:"scheduleDate" binding:"required"`
-	EndDate          time.Time `json:"endDate"`
+	FromAccount string `json:"fromAccount" binding:"required"`
+	ToAccount   string `json:"toAccount" binding:"required"`
+	ToBank      string `json:"toBank" binding:"required"`
+	Amount      int64  `json:"amount" binding:"required"`
+	Currency    string `json:"currency" binding:"required"`
+	Note        string `json:"note"`
+	Schedule    string `json:"schedule" binding:"required"` // "ONCE" or "MONTHLY"
+	StartDate   string `json:"startDate" binding:"required"`
+	EndDate     string `json:"endDate"`
 }
 
 type ScheduleResponse struct {
-	ScheduleID   string    `json:"scheduleId"`
-	Status       string    `json:"status"`
-	NextRunDate  time.Time `json:"nextRunDate"`
-	EndDate      time.Time `json:"endDate"`
-	ScheduleType string    `json:"scheduleType"`
+	ScheduleID   string `json:"scheduleId"`
+	Status       string `json:"status"`
+	NextRunDate  string `json:"nextRunDate"`
+	EndDate      string `json:"endDate"`
+	ScheduleType string `json:"scheduleType"`
 }
 
 type Handler struct {
@@ -188,8 +189,9 @@ func (h *Handler) GetSchedules(c *gin.Context) {
 	rows, err := h.db.Query(`
         SELECT schedule_id, from_account, to_account, to_account_name, to_bank, amount, note, schedule_date
         FROM schedules
-        WHERE account_number = $1
-        AND status = 'scheduled'
+        WHERE from_account = $1
+        AND status = 'SCHEDULED'
+        ORDER BY schedule_date ASC
         `, accountNo)
 	if err != nil {
 		log.Println(err)
@@ -198,7 +200,7 @@ func (h *Handler) GetSchedules(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	var schedules []Schedule
+	schedules := []Schedule{}
 	for rows.Next() {
 		var sch Schedule
 		var scheduleDate string
@@ -219,6 +221,61 @@ func (h *Handler) GetSchedules(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, schedules)
+}
+
+func (h *Handler) CreateSchedules(c *gin.Context) {
+	var req ScheduleRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var toAccountName string
+	err := h.db.QueryRow(`
+        SELECT account_name
+        FROM accounts
+        WHERE account_number = $1`,
+		req.ToAccount).Scan(&toAccountName)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
+		return
+	}
+
+	if firebase.IsDisabled("enable_schedule_once") && req.Schedule == "once" {
+		msg := "one time schedule transfer is unavailable"
+		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+		return
+	}
+
+	if firebase.IsDisabled("enable_schedule_monthly") && req.Schedule == "monthly" {
+		msg := "monthly schedule transfer is unavailable"
+		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+		return
+	}
+
+	schID := scheduleID()
+	status := "SCHEDULED"
+
+	_, err = h.db.Exec(`
+        INSERT INTO schedules (schedule_id, from_account, to_account, to_account_name, to_bank, amount, currency, note, status, schedule, schedule_date, end_date)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);`,
+		schID, req.FromAccount, req.ToAccount, toAccountName, req.ToBank, req.Amount, req.Currency, req.Note, status, req.Schedule, req.StartDate, req.EndDate)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to schedule transfer"})
+		return
+	}
+
+	resp := ScheduleResponse{
+		ScheduleID:   schID,
+		Status:       status,
+		NextRunDate:  req.StartDate,
+		EndDate:      req.EndDate,
+		ScheduleType: req.Schedule,
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
 func transactionID() string {
@@ -347,7 +404,7 @@ func (h *Handler) ScheduleTransfer(c *gin.Context) {
 		_, err := h.db.Exec(`
         INSERT INTO schedules (schedule_id, from_account, to_account, amount, currency, note, status, schedule, schedule_date, end_date)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
-			schID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.Note, status, req.Schedule, req.ScheduleDate, req.EndDate)
+			schID, req.FromAccount, req.ToAccount, req.Amount, req.Currency, req.Note, status, req.Schedule, req.StartDate, req.EndDate)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to schedule transfer"})
 			return
@@ -356,7 +413,7 @@ func (h *Handler) ScheduleTransfer(c *gin.Context) {
 		resp := ScheduleResponse{
 			ScheduleID:   schID,
 			Status:       status,
-			NextRunDate:  req.ScheduleDate,
+			NextRunDate:  req.StartDate,
 			EndDate:      req.EndDate,
 			ScheduleType: req.Schedule,
 		}
@@ -372,7 +429,7 @@ func (h *Handler) ScheduleTransfer(c *gin.Context) {
 		_, err := h.db.Exec(`
         INSERT INTO schedules (schedule_id, from_account, to_account, amount, currency, note, status, schedule, schedule_date, end_date)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
-			schID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.Note, status, req.Schedule, req.ScheduleDate, req.EndDate)
+			schID, req.FromAccount, req.ToAccount, req.Amount, req.Currency, req.Note, status, req.Schedule, req.StartDate, req.EndDate)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to schedule transfer"})
 			return
@@ -381,7 +438,7 @@ func (h *Handler) ScheduleTransfer(c *gin.Context) {
 		resp := ScheduleResponse{
 			ScheduleID:   schID,
 			Status:       status,
-			NextRunDate:  req.ScheduleDate,
+			NextRunDate:  req.StartDate,
 			EndDate:      req.EndDate,
 			ScheduleType: req.Schedule,
 		}
@@ -445,7 +502,6 @@ func main() {
 	_, err = db.Exec(`
         CREATE TABLE IF NOT EXISTS schedules (
             schedule_id TEXT PRIMARY KEY,
-            account_number TEXT NOT NULL,
             from_account TEXT NOT NULL,
             to_account TEXT NOT NULL,
             to_account_name TEXT NOT NULL DEFAULT '',
@@ -508,11 +564,11 @@ func main() {
 	}
 
 	_, err = db.Exec(`
-        INSERT INTO schedules (schedule_id, account_number, from_account, to_account, to_account_name, to_bank, amount, currency, type, note, schedule, schedule_date, end_date)
+        INSERT INTO schedules (schedule_id, from_account, to_account, to_account_name, to_bank, amount, currency, note, schedule, status, schedule_date, end_date)
         VALUES
-            ('SCH123456789', '111-111-111', '111-111-111', '222-222-222', 'MaiThai', 'KTB', -1899900, 'THB', 'Transfer out', 'Breakfast', 'once', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
-            ('SCH987654321', '111-111-111', '111-111-111', '333-333-333', 'LaumPlearn', 'SCB', -2499850, 'THB', 'Transfer out', 'Lunch', 'once', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
-            ('SCH123434267', '111-111-111', '111-111-111', '444-444-444', 'Laumcing', 'KBank', -2398825, 'THB', 'Transfer out', 'Dinner', 'once', '2025-09-01 12:00:00', '2030-09-01 12:00:00')
+            ('SCH123456789', '111-111-111', '222-222-222', 'MaiThai', 'KTB', -1899900, 'THB', 'Breakfast', 'once', 'SCHEDULED', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
+            ('SCH987654321', '111-111-111', '333-333-333', 'LaumPlearn', 'SCB', -2499850, 'THB', 'Lunch', 'once', 'SCHEDULED', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
+            ('SCH123434267', '111-111-111', '444-444-444', 'Laumcing', 'KBank', -2398825, 'THB', 'Dinner', 'once', 'SCHEDULED', '2025-09-01 12:00:00', '2030-09-01 12:00:00')
         ON CONFLICT DO NOTHING;
     `)
 	if err != nil {
@@ -570,6 +626,7 @@ func main() {
 	router.GET("/transactions", h.GetAllTransactions)
 
 	router.POST("/accounts/:accountNumber/transfers", h.CreateTransfer)
+	router.POST("/accounts/:accountNumber/schedules", h.CreateSchedules)
 
 	router.GET("/features", func(c *gin.Context) {
 		c.JSON(http.StatusOK, firebase.AllConfigs())
