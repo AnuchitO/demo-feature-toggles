@@ -11,6 +11,7 @@ import (
 
 	"demo/firebase"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "modernc.org/sqlite"
 )
@@ -51,17 +52,18 @@ type Schedule struct {
 
 // Request & Response Structs
 type TransferRequest struct {
-	AccountNumber    string  `json:"accountNumber" binding:"required"`
-	RecipientAccount string  `json:"recipientAccount" binding:"required"`
-	Amount           float64 `json:"amount" binding:"required"`
-	Currency         string  `json:"currency" binding:"required"`
-	Note             string  `json:"note"`
+	FromAccount string  `json:"fromAccount" binding:"required"`
+	ToAccount   string  `json:"toAccount" binding:"required"`
+	ToBank      string  `json:"toBank" binding:"required"`
+	Amount      float64 `json:"amount" binding:"required"`
+	Currency    string  `json:"currency" binding:"required"`
+	Note        string  `json:"note"`
 }
 
 type TransferResponse struct {
-	TransactionID string    `json:"transactionId"`
-	Status        string    `json:"status"`
-	TransferredAt time.Time `json:"transferredAt"`
+	TransactionID string `json:"transactionId"`
+	Status        string `json:"status"`
+	TransferredAt string `json:"transferredAt"`
 }
 
 type ScheduleRequest struct {
@@ -198,31 +200,46 @@ func (h *Handler) CreateTransfer(c *gin.Context) {
         SELECT balance
         FROM accounts
         WHERE account_number = $1`,
-		req.AccountNumber).Scan(&balance)
+		req.FromAccount).Scan(&balance)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
 		return
 	}
 	if balance < req.Amount {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "insufficient balance"})
 		return
 	}
 
-	tx, err := h.db.Begin()
-	// 1. create trascationID
-	txID := transactionID()
-	stamp := time.Now()
-
-	// 2. insert to transactions TABLE
+	var toAccountName string
+	err = h.db.QueryRow(`
+        SELECT account_name
+        FROM accounts
+        WHERE account_number = $1`,
+		req.ToAccount).Scan(&toAccountName)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
+		return
+	}
+
+	tx, err := h.db.Begin()
+	txID := transactionID()
+	stamp := time.Now().Format("2006-01-02 15:04:05")
+
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
+		return
 	}
 
 	_, err = tx.Exec(`
-        INSERT INTO transactions (transaction_id, from_account, to_account, amount, currency, note, transferred_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-		txID, req.AccountNumber, req.RecipientAccount, req.Amount, req.Currency, req.Note, stamp)
+        INSERT INTO transactions (transaction_id, from_account, to_account, to_account_name, to_bank, amount, currency, type, note, transferred_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+		txID, req.FromAccount, req.ToAccount, toAccountName, req.ToBank, req.Amount, req.Currency, "Transfer out", req.Note, stamp)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
 		return
 	}
@@ -232,15 +249,29 @@ func (h *Handler) CreateTransfer(c *gin.Context) {
         UPDATE accounts
         SET balance = balance - $1
         WHERE account_number = $2`,
-		req.Amount, req.AccountNumber)
+		req.Amount, req.FromAccount)
 	// 4. return response
 	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
+		return
+	}
+
+	// 5. update balance in to_account
+	_, err = tx.Exec(`
+        UPDATE accounts
+        SET balance = balance + $1
+        WHERE account_number = $2`,
+		req.Amount, req.ToAccount)
+	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
 		return
 	}
 
 	err = tx.Commit()
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
 		return
 	}
@@ -464,9 +495,9 @@ func main() {
 	h := &Handler{db: db}
 
 	router := gin.Default()
+	router.Use(cors.Default())
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
-	// allow all origins
 	router.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -476,9 +507,10 @@ func main() {
 
 	// Routes
 	router.GET("/accounts/:accountNumber/balances", h.GetBalance)
-	router.GET("accounts/:accountNumber/transactions", h.GetTransactions)
-	router.GET("accounts/:accountNumber/schedules", h.GetSchedules)
-	router.POST("/transfers", h.CreateTransfer)
+	router.GET("/accounts/:accountNumber/transactions", h.GetTransactions)
+	router.GET("/accounts/:accountNumber/schedules", h.GetSchedules)
+
+	router.POST("/accounts/:accountNumber/transfers", h.CreateTransfer)
 
 	router.GET("/features", func(c *gin.Context) {
 		c.JSON(http.StatusOK, firebase.AllConfigs())

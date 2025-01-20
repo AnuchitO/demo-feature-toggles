@@ -20,7 +20,12 @@ export const formatDate = (date: string = 'YYYY-MM-DDTHH:mm:ssZ') => {
   return dayjs(date).format('DD MMM YYYY');
 }
 
+export const SATANG = 100;
 export const satangToBaht = (satang: number) => {
-  return satang / 100;
+  return satang / SATANG;
+}
+
+export const bahtToSatang = (baht: number) => {
+  return baht * SATANG;
 }
 

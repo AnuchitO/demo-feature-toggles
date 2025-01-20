@@ -9,6 +9,8 @@ import { Accounts } from './Accounts'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 
 import { Days, MonthDatePicker, SingleDatePicker } from './DatePicker'
+import { transfer, scheduleTransfer } from './services/accounts'
+import { bahtToSatang } from './formater'
 
 interface TextProps {
   label: string;
@@ -32,13 +34,25 @@ export const Text = ({ label, onChange }: TextProps) => {
   </>
 }
 
+
 interface NumberProps {
   label: string;
-  onChange: () => void;
+  onChange: (value: number) => void;
 }
 
+// TODO: Implement currency input
+// https://github.com/danestves/headless-currency-input
+// bun install headless-currency-input
 export const Number = ({ label, onChange }: NumberProps) => {
-  return <>
+  const [inputValue, setInputValue] = useState<number>(0)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value: number = parseInt(e.target.value, 10)
+    setInputValue(value)
+    onChange(value)
+  }
+
+  return (
     <div className="w-full max-w-md px-4 mt-2 mb-2 justify-start">
       <Field>
         <Label className="text-sm/6 font-medium text-white flex">{label}</Label>
@@ -48,16 +62,21 @@ export const Number = ({ label, onChange }: NumberProps) => {
             'mt-3 block w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white',
             'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
           )}
-          onChange={onChange}
+          value={inputValue}
+          onChange={handleChange}
         />
       </Field>
     </div>
-  </>
+  )
 }
 
-
-export function SetSchedule() {
+export function SetSchedule({ onChange }: { onChange: (value: boolean) => void }) {
   const [enabled, setEnabled] = useState(false)
+
+  const handleToggle = (value: boolean) => {
+    setEnabled(value)
+    onChange(value)
+  }
 
   return (
     <>
@@ -67,7 +86,7 @@ export function SetSchedule() {
             <Label className="text-sm/6 font-medium text-white flex">Schedule</Label>
             <Switch
               checked={enabled}
-              onChange={setEnabled}
+              onChange={handleToggle}
               className="group relative flex h-7 w-14 cursor-pointer rounded-full bg-white/10 p-1 transition-colors duration-200 ease-in-out focus:outline-none data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-green-500"
 
             >
@@ -123,11 +142,25 @@ function ScheduleTab() {
     </div >
   )
 }
-export function Banks() {
+
+
+interface ToAccountsProps {
+  onSelect: (value: string) => void;
+}
+
+export function ToAccounts({ onSelect }: ToAccountsProps) {
+  const [selectedAccount, setSelectedAccount] = useState<string>('KTB:111-111-111')
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value
+    setSelectedAccount(value)
+    onSelect(value)
+  }
+
   return (
     <div className="w-full max-w-md px-4 justify-start">
       <Field>
-        <Label className="text-sm/6 font-medium text-white flex">Bank</Label>
+        <Label className="text-sm/6 font-medium text-white flex">To Bank Account</Label>
         <div className="relative">
           <Select
             className={clsx(
@@ -135,10 +168,13 @@ export function Banks() {
               'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25',
               '*:text-black'
             )}
+            value={selectedAccount} // Set value to the selected account from state
+            onChange={handleChange}  // Handle selection change
           >
-            <option value="KTB">KTB</option>
-            <option value="SCB">SCB</option>
-            <option value="KBank">KBank</option>
+            <option value="KTB:111-111-111">KTB 111-111-111</option>
+            <option value="KTB:222-222-222">KTB 222-222-222</option>
+            <option value="SCB:333-333-333">SCB 333-333-333</option>
+            <option value="KBank:444-444-444">KBank 444-444-444</option>
           </Select>
           <ChevronDownIcon
             className="group pointer-events-none absolute top-2.5 right-2.5 size-4 fill-white/60"
@@ -150,44 +186,107 @@ export function Banks() {
   )
 }
 
+// Define the payload types for transfer and schedule
+interface TransferPayload {
+  fromAccount: string;
+  toAccount: string;
+  toBank: string;
+  amount: number;
+  currency: string;
+  note: string;
+}
+
+interface SchedulePayload {
+  fromAccount: string;
+  toAccount: string;
+  toBank: string;
+  amount: number;
+  currency: string;
+  type: string;
+  note: string;
+  schedule: string; // e.g., 'once', 'daily', etc.
+  scheduleDate: string;
+  endDate: string;
+}
 
 const Transfers = () => {
   const navigate = useNavigate()
+
+  const [fromAccount, setFromAccount] = useState<string>('111-111-111')
+  const [toAccount, setToAccount] = useState<string>('')
+  const [toBank, setToBank] = useState<string>('')
+  const [amount, setAmount] = useState<number>(0)
+  const [note, setNote] = useState<string>('')
+  const [isSchedule, setIsSchedule] = useState<boolean>(false)
+
+  const onSelectToAccount = (value: string = ":") => {
+    const [bank, account] = value.split(':')
+    setToBank(bank)
+    setToAccount(account)
+  }
+
+  // Mocking SetSchedule component for handling scheduling behavior
+  const handleScheduleToggle = (value: boolean) => {
+    setIsSchedule(value)
+  }
 
   const goBack = () => {
     navigate('/')
   }
 
-  return <>
+  const submitTransfer = async () => {
+    const payload: TransferPayload = {
+      fromAccount,
+      toAccount,
+      toBank,
+      amount: bahtToSatang(amount),
+      currency: 'THB',
+      note,
+    }
+
+    try {
+      const response = await transfer(payload)
+      if (response.status === 'transferred') {
+        console.log('Transfer successful')
+        navigate('/') // Redirect after successful transfer
+      } else {
+        console.error('Failed to process transfer')
+      }
+    } catch (error) {
+      console.error('Error during API call', error)
+    }
+  }
+
+  return (
     <div>
       <div className="rounded-2xl overflow-hidden shadow-lg">
-        <div className="flex flex-col justify-center" >
+        <div className="flex flex-col justify-center">
           <div>
             <Accounts />
           </div>
         </div>
-        <div className="flex flex-col min-h-80  m-4" >
+        <div className="flex flex-col min-h-80 m-4">
           <div className="rounded-2xl shadow-lg">
-            <div className="flex flex-col justify-center" >
-              <Banks />
-              <Number label="Account Number" onChange={(e) => { console.log(e) }} />
-              <Text label="Note" onChange={(e) => { console.log(e) }} />
-              <SetSchedule />
+            <div className="flex flex-col justify-center">
+              <ToAccounts onSelect={onSelectToAccount} />
+              <Number label="Amount (baht only)" onChange={(amount) => { setAmount(amount) }} /> {/* TODO: handle satang input e.g 330.50 */}
+              <Text label="Note" onChange={(e) => setNote(e.target.value)} />
+              <SetSchedule onChange={handleScheduleToggle} />
             </div>
-            <div className="flex flex-row justify-center mt-2" >
+            <div className="flex flex-row justify-center mt-2">
               <div className="flex one-space">
                 <CancelButton label="Cancel" onClick={goBack} />
               </div>
               <div className="flex third-space">
-                <TransferButton label="Confirm Transfer" onClick={goBack} />
+                <TransferButton label="Confirm Transfer" onClick={submitTransfer} />
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div >
-
-
-  </>
+    </div>
+  )
 }
-export default Transfers;
+
+export default Transfers
+

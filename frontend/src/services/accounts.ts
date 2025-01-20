@@ -32,3 +32,53 @@ export const fetchAccountSchedules = async (accountNumber: string): Promise<Sche
   }
 };
 
+export interface TransferPayload {
+  fromAccount: string;
+  toAccount: string;
+  toBank: string;
+  note: string;
+  amount: number;
+}
+
+export interface TransferResponse {
+  transactionID: string;
+  status: string;
+  transferredAt: string;
+}
+
+
+export const transfer = async (payload: TransferPayload): Promise<TransferResponse> => {
+  try {
+    const response = await api.post<TransferResponse>(`/accounts/${payload.fromAccount}/transfers`, payload);
+    return response.data;
+  } catch (error) {
+    console.error('Error transferring:', error);
+    throw error;
+  }
+}
+
+export interface ScheduleTransferPayload {
+  fromAccount: string;
+  toAccount: string;
+  toBank: string;
+  note: string;
+  type: string;
+  amount: number;
+  scheduleDate: string;
+  endDate: string;
+}
+
+export interface ScheduleTransferResponse {
+  scheduleID: string;
+}
+
+export const scheduleTransfer = async (payload: ScheduleTransferPayload): Promise<ScheduleTransferResponse> => {
+  try {
+    const response = await api.post<ScheduleTransferResponse>('/schedule-transfer', payload);
+    return response.data;
+  } catch (error) {
+    console.error('Error scheduling transfer:', error);
+    throw error;
+  }
+}
+
