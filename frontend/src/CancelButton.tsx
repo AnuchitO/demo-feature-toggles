@@ -1,4 +1,5 @@
 import icon from './icon-cancel.svg'
+import iconDisable from './icon-cancel-disable.svg'
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 
@@ -22,11 +23,21 @@ const useStyles = makeStyles({
 interface Props {
   label: string;
   onClick: () => void;
+  disabled?: boolean;
 }
 
 
-export const CancelButton = ({ onClick, label = "" }: Props) => {
+export const CancelButton = ({ onClick, label = "Cancel", disabled = false }: Props) => {
   const classes = useStyles();
+
+  if (disabled) {
+    return <>
+      <Button className={classes.root} disabled
+        startIcon={<img src={iconDisable} alt={label} className="w-6 h-6" />}
+      > {label}</Button>
+    </>
+  }
+
   return <>
     <Button className={classes.root}
       startIcon={<img src={icon} alt={label} className="w-6 h-6" />}

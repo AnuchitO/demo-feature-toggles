@@ -1,4 +1,6 @@
 import icon from './icon-transfer.svg'
+import iconDisabled from './icon-transfer-disable.svg'
+import iconLoading from './icon-loading.png'
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 
@@ -21,15 +23,34 @@ const useStyles = makeStyles({
 
 interface Props {
   label: string;
+  disabled?: boolean;
+  loading?: boolean;
   onClick: () => void;
 }
 
 
-export const TransferButton = ({ onClick, label = "Transfer" }: Props) => {
+export const TransferButton = ({ onClick, disabled = false, loading = false, label = "Transfer" }: Props) => {
   const classes = useStyles();
+
+  if (loading) {
+    return <>
+      <Button className={classes.root} disabled
+        startIcon={<img src={iconLoading} alt={label} className="animate-spin w-6 h-6" />}
+      > {label}</Button>
+    </>
+  }
+
+  if (disabled) {
+    return <>
+      <Button className={classes.root} disabled
+        startIcon={<img src={iconDisabled} alt={label} className="w-6 h-6" />}
+      > {label}</Button>
+    </>
+  }
+
   return <>
     <Button className={classes.root}
-      startIcon={<img src={icon} alt="transfer" className="w-6 h-6" />}
+      startIcon={<img src={icon} alt={label} className="w-6 h-6" />}
       onClick={onClick}
     > {label}</Button>
   </>
