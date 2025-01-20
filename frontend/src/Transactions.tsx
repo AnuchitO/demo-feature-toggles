@@ -26,6 +26,7 @@ export const TransactionItem = ({ type = "Activity", date = "18 Jan 2025 15:03",
 }
 
 export const Transactions = ({ accountNumber = '111-111-111' }) => {
+  const hideMonthly = true
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +38,6 @@ export const Transactions = ({ accountNumber = '111-111-111' }) => {
         const data = await fetchAccountTransactions(accountNumber);
         setTransactions(data);
       } catch (err) {
-        console.error('Failed to load account data:', err);
         setError('Failed to load account data');
       } finally {
         setIsLoading(false);
@@ -60,7 +60,11 @@ export const Transactions = ({ accountNumber = '111-111-111' }) => {
       <p className="font-black text-slate-100 text-xs">
         Transactions
       </p>
-      <MonthlyDropdown />
+      {!hideMonthly && <MonthlyDropdown />}
+      {hideMonthly && <p className="font-black text-slate-100 text-xs">
+        All
+      </p>
+      }
     </div>
     <div className="w-full h-full min-w-100 min-h-40 rounded-lg shadow-lg" >
       {transactions.map((transaction, index) => {

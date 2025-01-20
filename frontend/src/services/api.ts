@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
+import { getEnv } from '../config/env';
 
-const BACKEND_BASE_URL = import.meta.env.BACKEND_BASE_URL || 'http://localhost:8080';
+const BACKEND_BASE_URL = getEnv("VITE_BACKEND_BASE_URL", 'http://localhost:8080');
 
 export const createApiInstance = (): AxiosInstance => {
   const instance = axios.create({

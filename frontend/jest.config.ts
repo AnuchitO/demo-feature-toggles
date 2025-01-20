@@ -12,7 +12,7 @@ module.exports = {
   },
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: 'tsconfig.json'
+      tsconfig: 'tsconfig.json',
     }],
     '^.+\\.(js|jsx)$': 'babel-jest'
   },
