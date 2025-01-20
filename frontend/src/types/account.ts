@@ -9,7 +9,7 @@ export interface Account {
 
 export interface Transaction {
   type: string;
-  date: string;
+  transferredAt: string;
   amount: number;
 }
 

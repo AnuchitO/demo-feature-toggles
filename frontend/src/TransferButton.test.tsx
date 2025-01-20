@@ -16,7 +16,7 @@ describe('TransferButton', () => {
     expect(button).toHaveStyle('background: linear-gradient(45deg, #1E40AF 30%, #0EA5E9 90%)');
 
     // Check if the button contains the transfer icon
-    const icon = screen.getByAltText('transfer');
+    const icon = screen.getByAltText('Transfer');
     expect(icon).toHaveClass('w-6 h-6');
   });
 

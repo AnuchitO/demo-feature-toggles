@@ -11,13 +11,13 @@ describe('TransactionItem', () => {
     render(
       <TransactionItem
         type="Transfer in"
-        date="18 Jan 2025 15:03"
+        transferredAt="18 Jan 2025 15:03"
         amount={100000}
       />
     );
 
     expect(screen.getByText('Transfer in')).toBeInTheDocument();
-    expect(screen.getByText('18 Jan 2025 15:03')).toBeInTheDocument();
+    expect(screen.getByText('18 Jan 2025')).toBeInTheDocument();
     expect(screen.getByText('+1,000.00')).toBeInTheDocument();
     expect(screen.getByText('+1,000.00')).toHaveClass('text-green-400');
   });
@@ -26,22 +26,22 @@ describe('TransactionItem', () => {
     render(
       <TransactionItem
         type="Transfer out"
-        date="18 Jan 2025 15:03"
+        transferredAt="2025-01-18T15:03:00.000Z"
         amount={-100000}
       />
     );
 
     expect(screen.getByText('Transfer out')).toBeInTheDocument();
-    expect(screen.getByText('18 Jan 2025 15:03')).toBeInTheDocument();
+    expect(screen.getByText('18 Jan 2025')).toBeInTheDocument();
     expect(screen.getByText('-1,000.00')).toBeInTheDocument();
     expect(screen.getByText('-1,000.00')).toHaveClass('text-red-400');
   });
 
   it('renders with default props', () => {
-    render(<TransactionItem type="Activity" date="18 Jan 2025 15:03" amount={0} />);
+    render(<TransactionItem type="Activity" transferredAt="18 Jan 2025 15:03" amount={0} />);
 
     expect(screen.getByText('Activity')).toBeInTheDocument();
-    expect(screen.getByText('18 Jan 2025 15:03')).toBeInTheDocument();
+    expect(screen.getByText('18 Jan 2025')).toBeInTheDocument();
     expect(screen.getByText('+0.00')).toBeInTheDocument();
   });
 });
@@ -51,7 +51,7 @@ describe('Transactions', () => {
     {
       id: '1',
       type: 'Transfer in',
-      date: '18 Jan 2025 15:03',
+      transferredAt: '2025-01-18T15:03:00.000Z',
       amount: 100000,
       senderId: '123',
       recipientId: '456',
@@ -60,7 +60,7 @@ describe('Transactions', () => {
     {
       id: '2',
       type: 'Transfer out',
-      date: '19 Jan 2025 16:04',
+      transferredAt: '2025-01-19T16:04:00.000Z',
       amount: -50000,
       senderId: '456',
       recipientId: '123',

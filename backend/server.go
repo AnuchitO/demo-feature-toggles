@@ -37,7 +37,7 @@ type Transaction struct {
 	Amount        int64     `json:"amount"`
 	Currency      string    `json:"currency"`
 	Note          string    `json:"note"`
-	TransferredAt time.Time `json:"date"`
+	TransferredAt time.Time `json:"transferredAt"`
 }
 
 type Schedule struct {
