@@ -1,5 +1,6 @@
 import clsx from 'clsx'
 import { useState } from 'react'
+import { NumericFormat } from 'react-number-format'
 import { useNavigate } from 'react-router-dom'
 import { Input, Field, Label, Select, Switch } from '@headlessui/react'
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
@@ -40,31 +41,35 @@ interface NumberProps {
   onChange: (value: number) => void;
 }
 
-// TODO: Implement currency input
-// https://github.com/danestves/headless-currency-input
-// bun install headless-currency-input
 export const Number = ({ label, onChange }: NumberProps) => {
-  const [inputValue, setInputValue] = useState<number>(0)
-
+  const defaultValue = '0.00'
+  const [value, setValue] = useState(defaultValue)
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value: number = parseInt(e.target.value, 10)
-    setInputValue(value)
+    const value: number = parseFloat(e.target.value)
     onChange(value)
+  }
+
+  const onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value === defaultValue) {
+      setValue('')
+    }
   }
 
   return (
     <div className="w-full max-w-md px-4 mt-2 mb-2 justify-start">
       <Field>
         <Label className="text-sm/6 font-medium text-white flex">{label}</Label>
-        <Input
-          type="number"
+        <NumericFormat
           className={clsx(
-            'mt-3 block w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white',
+            'mt-3 block w-full text-right rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white',
             'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
           )}
-          value={inputValue}
           onChange={handleChange}
-        />
+          onFocus={onFocus}
+          value={value}
+          decimalScale={2}
+          thousandSeparator=","
+          fixedDecimalScale />
       </Field>
     </div>
   )
@@ -269,7 +274,7 @@ const Transfers = () => {
           <div className="rounded-2xl shadow-lg">
             <div className="flex flex-col justify-center">
               <ToAccounts onSelect={onSelectToAccount} />
-              <Number label="Amount (baht only)" onChange={(amount) => { setAmount(amount) }} /> {/* TODO: handle satang input e.g 330.50 */}
+              <Number label="Amount" onChange={(amount) => { setAmount(amount) }} />
               <Text label="Note" onChange={(e) => setNote(e.target.value)} />
               <SetSchedule onChange={handleScheduleToggle} />
             </div>
