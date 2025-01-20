@@ -38,7 +38,7 @@ export const ScheduleItem = ({ toBank, toAccount = "000-000-000-000", toAccountN
       </div>
       <div className="flex flex-col text-right">
         <p className="font-thin text-gray-400 text-xs/6 tracking-tighter font-os">{formatDate(date)}</p>
-        {amount < 0 && <p className="font-thin text-red-400 text-sm/4 font-os">{commaSeparated(satangToBaht(amount))}</p>}
+        <p className="font-thin text-red-400 text-sm/4 font-os">{commaSeparated(satangToBaht(amount))}</p>
       </div>
     </div>
   </>
