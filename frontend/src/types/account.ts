@@ -13,6 +13,17 @@ export interface Transaction {
   amount: number;
 }
 
+// Define the payload types for transfer and schedule
+export interface TransferPayload {
+  fromAccount: string;
+  toAccount: string;
+  toBank: string;
+  amount: number;
+  currency: string;
+  note: string;
+}
+
+
 export type Bank = "SCB" | "KTB" | "KBank"
 
 export interface Schedule {

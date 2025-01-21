@@ -388,7 +388,7 @@ func (h *Handler) CreateTransfer(c *gin.Context) {
 
 	resp := TransferResponse{
 		TransactionID: txID,
-		Status:        "Transferred",
+		Status:        "TRANSFERRED",
 		TransferredAt: stamp,
 	}
 

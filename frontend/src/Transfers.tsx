@@ -13,7 +13,7 @@ import { Days, MonthDatePicker, SingleDatePicker } from './DatePicker'
 import { transfer, scheduleTransfer } from './services/accounts'
 import { bahtToSatang } from './formater'
 
-import type { ScheduleTransferPayload } from './types/account'
+import type { ScheduleTransferPayload, TransferPayload } from './types/account'
 
 interface TextProps {
   label: string;
@@ -224,18 +224,7 @@ export function ToAccounts({ onSelect, disabled = false }: ToAccountsProps) {
   )
 }
 
-// Define the payload types for transfer and schedule
-interface TransferPayload {
-  fromAccount: string;
-  toAccount: string;
-  toBank: string;
-  amount: number;
-  currency: string;
-  note: string;
-}
-
-
-const Transfers = () => {
+export const Transfers = () => {
   const navigate = useNavigate()
 
   const [isOpen, setIsOpen] = useState(false)
@@ -348,7 +337,7 @@ const Transfers = () => {
 
     try {
       const response = await transfer(payload)
-      if (response.status === 'Transferred') {
+      if (response.status === 'TRANSFERRED') {
         console.log('Transfer successful')
         openDialog({
           title: "Transfer Successful",
