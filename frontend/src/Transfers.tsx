@@ -134,11 +134,13 @@ export function SetSchedule({ onChange, disabled = false }: SetScheduleProps) {
 
 export interface ScheduleTabProps {
   setActiveTab: (value: string) => void;
-  values: ScheduleValues;
-  onSetValues: (values: ScheduleValues) => void;
+  onSetDay: (day: string) => void;
+  onSetScheduleDate: (date: string) => void;
+  onSetStartDate: (date: string) => void;
+  onSetEndDate: (date: string) => void;
 }
 
-function ScheduleTab({ setActiveTab, onSetValues, values }: ScheduleTabProps) {
+function ScheduleTab({ setActiveTab, onSetScheduleDate, onSetDay, onSetStartDate, onSetEndDate }: ScheduleTabProps) {
   return (
     <div className="w-full max-w-md">
       <TabGroup>
@@ -156,20 +158,20 @@ function ScheduleTab({ setActiveTab, onSetValues, values }: ScheduleTabProps) {
             <div className="flex justify-center w-full mb-2">
               <Field className="flex flex-col items-start w-full">
                 <Label className="mb-2" >Scheduled date</Label>
-                <SingleDatePicker onChange={date => onSetValues({ scheduleDate: date, day: "", startDate: "", endDate: "" })} />
+                <SingleDatePicker onChange={date => onSetScheduleDate(date)} />
               </Field>
             </div>
           </TabPanel>
           <TabPanel>
             <div>
-              <Days onChange={day => onSetValues({ ...values, day: day })} />
+              <Days onChange={day => onSetDay(day)} />
               <Field className="flex flex-col items-start m-4">
                 <Label className="mb-2">From</Label>
-                <MonthDatePicker onChange={startDate => onSetValues({ ...values, startDate: startDate })} />
+                <MonthDatePicker onChange={startDate => onSetStartDate(startDate)} />
               </Field>
               <Field className="flex flex-col items-start m-4">
                 <Label className="mb-2">To</Label>
-                <MonthDatePicker onChange={endDate => onSetValues({ ...values, endDate: endDate })} />
+                <MonthDatePicker onChange={endDate => onSetEndDate(endDate)} />
               </Field>
             </div>
           </TabPanel>
@@ -372,15 +374,6 @@ const Transfers = () => {
     }
   }
 
-
-  const onSetValues = (values: ScheduleValues) => {
-    setScheduleDate(values.scheduleDate)
-    setDay(values.day)
-    setStartDate(values.startDate)
-    setEndDate(values.endDate)
-  }
-
-
   return (
     <div>
       <div className="rounded-2xl shadow-lg">
@@ -396,12 +389,12 @@ const Transfers = () => {
               <Number disabled={disabled} label="Amount" onChange={(amount) => { setAmount(amount) }} />
               <Text disabled={disabled} label="Note" onChange={(e) => setNote(e.target.value)} />
               <SetSchedule disabled={disabled} onChange={handleScheduleToggle} />
-              {isSchedule && <ScheduleTab setActiveTab={setActiveTab} onSetValues={onSetValues} values={{
-                scheduleDate: scheduleDate,
-                day: day,
-                startDate: startDate,
-                endDate: endDate
-              }} />}
+              {isSchedule && <ScheduleTab setActiveTab={setActiveTab}
+                onSetDay={setDay}
+                onSetScheduleDate={setScheduleDate}
+                onSetStartDate={setStartDate}
+                onSetEndDate={setEndDate}
+              />}
             </div>
             {error && <p className="text-red-400 text-sm">{error}</p>}
             <div className="flex flex-row justify-center mt-2 mb-2">

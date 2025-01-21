@@ -56,7 +56,7 @@ export const SingleDatePicker: React.FC<DatePickerProps> = ({
 
   useEffect(() => {
     onChange(defaultValue.format('YYYY-MM-DD'));
-  }, [defaultValue]);
+  }, []);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -84,7 +84,7 @@ export const MonthDatePicker: React.FC<DatePickerProps> = ({
 
   useEffect(() => {
     onChange(defaultValue.format('YYYY-MM'));
-  }, [defaultValue]);
+  }, []);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -105,7 +105,7 @@ export const MonthDatePicker: React.FC<DatePickerProps> = ({
 
 export const Days: React.FC<DaysProps> = ({
   onChange,
-  defaultValue = '1'
+  defaultValue = dayjs().format('DD'),
 }) => {
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     onChange(event.target.value);
@@ -113,9 +113,9 @@ export const Days: React.FC<DaysProps> = ({
 
   useEffect(() => {
     onChange(defaultValue);
-  }, [defaultValue]);
+  }, []);
 
-  const days = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+  const days = Array.from({ length: 31 }, (_, i) => (i + 1).toString().padStart(2, '0'));
 
   return (
     <div className="w-full max-w-md justify-start">

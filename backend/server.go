@@ -231,6 +231,17 @@ func (h *Handler) CreateSchedules(c *gin.Context) {
 		return
 	}
 
+	format := "2006-01-02 15:04:05"
+	if _, err := time.Parse(format, req.StartDate); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid start date"})
+		return
+	}
+
+	if _, err := time.Parse(format, req.EndDate); req.EndDate != "" && err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid end date"})
+		return
+	}
+
 	var toAccountName string
 	err := h.db.QueryRow(`
         SELECT account_name
