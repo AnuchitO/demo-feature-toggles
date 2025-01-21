@@ -91,56 +91,77 @@ type Handler struct {
 	db *sql.DB
 }
 
-// Handlers
-func (h *Handler) GetBalance(c *gin.Context) {
-	accountNo := c.Param("accountNumber")
+// Utility function to handle errors consistently
+func handleError(c *gin.Context, err error, msg string) {
+	if err != nil {
+		log.Printf("Error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
+	}
+}
+
+// Query for account details
+func (h *Handler) getAccount(accountNo string) (*Account, error) {
 	var account Account
 	err := h.db.QueryRow(`
-        SELECT branch, account_number, type, account_name, balance, available_balance, Currency
-        FROM accounts
-        WHERE account_number = $1`,
-		accountNo).Scan(&account.Branch, &account.AccountNumber, &account.AccountType, &account.AccountName, &account.Balance, &account.AvailableBalance, &account.Currency)
+		SELECT branch, account_number, type, account_name, balance, available_balance, currency
+		FROM accounts
+		WHERE account_number = ?`, accountNo).Scan(
+		&account.Branch, &account.AccountNumber, &account.AccountType, &account.AccountName,
+		&account.Balance, &account.AvailableBalance, &account.Currency,
+	)
+	return &account, err
+}
+
+// GetBalance handler
+func (h *Handler) GetBalance(c *gin.Context) {
+	accountNo := c.Param("accountNumber")
+	account, err := h.getAccount(accountNo)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get balance"})
+		handleError(c, err, "unable to get account balance")
 		return
 	}
 
 	c.JSON(http.StatusOK, account)
 }
 
-func (h *Handler) GetAllTransactions(c *gin.Context) {
+// Query for all transactions
+func (h *Handler) getAllTransactions() ([]Transaction, error) {
 	rows, err := h.db.Query(`
-        SELECT transaction_id, account_number, from_account, to_account, to_account_name, to_bank, type, amount, currency, note, transferred_at
-        FROM transactions
-        ORDER BY transferred_at DESC
-    `)
+		SELECT transaction_id, account_number, from_account, to_account, to_account_name, to_bank,
+			type, amount, currency, note, transferred_at
+		FROM transactions ORDER BY transferred_at DESC
+	`)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get transactions"})
-		return
+		return nil, err
 	}
-
 	defer rows.Close()
 
 	var transactions []Transaction
 	for rows.Next() {
 		var txn Transaction
 		var transferredAt string
-		err := rows.Scan(&txn.TransactionID, &txn.AccountNumber, &txn.FromAccount, &txn.ToAccount, &txn.ToAccountName, &txn.ToBank, &txn.Type, &txn.Amount, &txn.Currency, &txn.Note, &transferredAt)
+		err := rows.Scan(&txn.TransactionID, &txn.AccountNumber, &txn.FromAccount,
+			&txn.ToAccount, &txn.ToAccountName, &txn.ToBank, &txn.Type, &txn.Amount,
+			&txn.Currency, &txn.Note, &transferredAt)
 		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get transactions"})
-			return
+			return nil, err
 		}
 		at, err := time.Parse("2006-01-02 15:04:05", transferredAt)
 		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get transactions"})
-			return
+			return nil, err
 		}
 		txn.TransferredAt = at
 		transactions = append(transactions, txn)
+	}
+	return transactions, nil
+}
+
+// GetAllTransactions handler
+func (h *Handler) GetAllTransactions(c *gin.Context) {
+	transactions, err := h.getAllTransactions()
+	if err != nil {
+		handleError(c, err, "unable to get transactions")
+		return
 	}
 
 	c.JSON(http.StatusOK, transactions)
@@ -148,16 +169,25 @@ func (h *Handler) GetAllTransactions(c *gin.Context) {
 
 func (h *Handler) GetTransactions(c *gin.Context) {
 	accountNo := c.Param("accountNumber")
+	transactions, err := h.fetchTransactions(accountNo)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, transactions)
+}
+
+// fetchTransactions fetches the transactions from the database and parses the transferred_at time
+func (h *Handler) fetchTransactions(accountNo string) ([]Transaction, error) {
 	rows, err := h.db.Query(`
         SELECT transaction_id, account_number, from_account, to_account, to_account_name, to_bank, type, amount, currency, note, transferred_at
         FROM transactions
         WHERE account_number = $1
         ORDER BY transferred_at DESC
-        `, accountNo)
+    `, accountNo)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get transactions"})
-		return
+		return nil, fmt.Errorf("unable to get transactions: %w", err)
 	}
 	defer rows.Close()
 
@@ -165,23 +195,25 @@ func (h *Handler) GetTransactions(c *gin.Context) {
 	for rows.Next() {
 		var txn Transaction
 		var transferredAt string
-		err := rows.Scan(&txn.TransactionID, &txn.AccountNumber, &txn.FromAccount, &txn.ToAccount, &txn.ToAccountName, &txn.ToBank, &txn.Type, &txn.Amount, &txn.Currency, &txn.Note, &transferredAt)
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get transactions"})
-			return
+		if err := rows.Scan(&txn.TransactionID, &txn.AccountNumber, &txn.FromAccount, &txn.ToAccount, &txn.ToAccountName, &txn.ToBank, &txn.Type, &txn.Amount, &txn.Currency, &txn.Note, &transferredAt); err != nil {
+			return nil, fmt.Errorf("unable to scan transaction: %w", err)
 		}
-		at, err := time.Parse("2006-01-02 15:04:05", transferredAt)
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to get transactions"})
-			return
+		if err := parseTransferredAt(&txn, transferredAt); err != nil {
+			return nil, fmt.Errorf("unable to parse transferred_at: %w", err)
 		}
-		txn.TransferredAt = at
 		transactions = append(transactions, txn)
 	}
+	return transactions, nil
+}
 
-	c.JSON(http.StatusOK, transactions)
+// parseTransferredAt parses the transferred_at time and sets it on the transaction
+func parseTransferredAt(txn *Transaction, transferredAt string) error {
+	at, err := time.Parse("2006-01-02 15:04:05", transferredAt)
+	if err != nil {
+		return fmt.Errorf("invalid time format: %w", err)
+	}
+	txn.TransferredAt = at
+	return nil
 }
 
 func (h *Handler) GetSchedules(c *gin.Context) {
