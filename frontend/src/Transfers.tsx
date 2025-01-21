@@ -14,10 +14,11 @@ import { transfer, scheduleTransfer } from './services/accounts'
 import { bahtToSatang } from './formater'
 
 import type { ScheduleTransferPayload, TransferPayload } from './types/account'
+import type { Account } from './types/account';
 
 interface TextProps {
   label: string;
-  onChange: () => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   disabled?: boolean;
 }
 
@@ -60,13 +61,14 @@ export const Number = ({ label, onChange, disabled = false }: NumberProps) => {
       setValue('')
     }
   }
-
+  //     TestingLibraryElementError: Found a label with the text of: /Amount/i, however no form control was found associated to that label. Make sure you're using the "for" attribute or "aria-labelledby" attribute correctly.
   return (
     <div className="w-full max-w-md px-4 mt-2 mb-2 justify-start">
       <Field>
         <Label className="text-sm/6 font-medium text-white flex">{label}</Label>
         <NumericFormat
           disabled={disabled}
+          data-testId="amount"
           className={clsx(
             `${disabled ? 'bg-neutral-900' : 'bg-white/5'}`,
             'mt-3 block w-full text-right rounded-lg border-none py-1.5 px-3 text-sm/6 text-white',
@@ -107,6 +109,7 @@ export function SetSchedule({ onChange, disabled = false }: SetScheduleProps) {
               disabled={disabled}
               checked={active}
               onChange={handleToggle}
+              data-testid="schedule-switch"
               className={clsx(
                 `${disabled ? 'bg-neutral-900' : 'bg-white/5'}`,
                 "group relative flex h-7 w-14 cursor-pointer rounded-full p-1 transition-colors duration-200 ease-in-out focus:outline-none data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-green-500",
@@ -224,7 +227,11 @@ export function ToAccounts({ onSelect, disabled = false }: ToAccountsProps) {
   )
 }
 
-export const Transfers = () => {
+interface TransfersProps {
+  account: Account;
+}
+
+export const Transfers = ({ account }: TransfersProps) => {
   const navigate = useNavigate()
 
   const [isOpen, setIsOpen] = useState(false)
@@ -240,7 +247,7 @@ export const Transfers = () => {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
 
-  const [fromAccount, setFromAccount] = useState<string>('111-111-111')
+  const [fromAccount] = useState<string>(account.number)
   const [toAccount, setToAccount] = useState<string>('')
   const [toBank, setToBank] = useState<string>('')
   const [amount, setAmount] = useState<number>(0)

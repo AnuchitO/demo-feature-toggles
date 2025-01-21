@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { formatCurrency } from './formater';
-import { fetchAccountBalances } from './services/accounts';
+import { DEMO_ACCOUNT, fetchAccountBalances } from './services/accounts';
 import { Account } from './types/account';
 
 interface BalanceProps {
@@ -52,7 +52,7 @@ export const Accounts: React.FC = () => {
     const loadAccount = async () => {
       try {
         setIsLoading(true);
-        const data = await fetchAccountBalances('111-111-111');
+        const data = await fetchAccountBalances(DEMO_ACCOUNT.number);
         setAccount(data);
       } catch (err) {
         console.error('Failed to load account data:', err);

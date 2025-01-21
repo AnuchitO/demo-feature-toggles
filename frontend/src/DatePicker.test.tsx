@@ -57,17 +57,17 @@ describe('Days', () => {
   });
 
   it('renders with default value', () => {
-    render(<Days />);
+    render(<Days defaultValue="01" onChange={() => { }} />);
     const select = screen.getByTestId('days-select');
     expect(select).toBeInTheDocument();
-    expect(select).toHaveValue('1');
+    expect(select).toHaveValue('01');
   });
 
   it('renders all 31 days as options', () => {
-    render(<Days />);
+    render(<Days onChange={() => { }} />);
     const options = screen.getAllByRole('option');
     expect(options).toHaveLength(31);
-    expect(options[0]).toHaveValue('1');
+    expect(options[0]).toHaveValue('01');
     expect(options[30]).toHaveValue('31');
   });
 
@@ -83,13 +83,13 @@ describe('Days', () => {
   });
 
   it('applies custom default value', () => {
-    render(<Days defaultValue="15" />);
+    render(<Days defaultValue="15" onChange={() => { }} />);
     const select = screen.getByTestId('days-select');
     expect(select).toHaveValue('15');
   });
 
   it('renders chevron icon', () => {
-    render(<Days />);
+    render(<Days onChange={() => { }} />);
     // Using getByRole with the correct attributes for SVG
     const icon = screen.getByTestId('chevron-icon');
     expect(icon).toBeInTheDocument();
