@@ -84,13 +84,6 @@ export const Number = ({ label, onChange, disabled = false }: NumberProps) => {
 }
 
 
-interface ScheduleValues {
-  scheduleDate: string;
-  day: string;
-  startDate: string;
-  endDate: string;
-}
-
 interface SetScheduleProps {
   onChange: (value: boolean) => void;
   disabled?: boolean;
