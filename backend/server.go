@@ -476,112 +476,12 @@ func main() {
 	}
 	defer db.Close()
 
-	_, err = db.Exec(`
-        CREATE TABLE IF NOT EXISTS accounts (
-            branch TEXT NOT NULL DEFAULT '',
-            account_number TEXT PRIMARY KEY,
-            type TEXT NOT NULL DEFAULT '',
-            account_name TEXT NOT NULL DEFAULT '',
-            balance INTEGER NOT NULL DEFAULT 0,
-            available_balance INTEGER NOT NULL DEFAULT 0,
-            currency TEXT NOT NULL DEFAULT 'THB'
-        )
-        `)
+	err = Migrate(db)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = db.Exec(`
-        CREATE TABLE IF NOT EXISTS transactions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            transaction_id TEXT NOT NULL,
-            account_number TEXT NOT NULL,
-            from_account TEXT NOT NULL,
-            to_account TEXT NOT NULL,
-            to_account_name TEXT NOT NULL DEFAULT '',
-            to_bank TEXT,
-            type TEXT NOT NULL DEFAULT '',
-            amount INTEGER NOT NULL,
-            currency TEXT NOT NULL,
-            note TEXT,
-            transferred_at TEXT NOT NULL
-        )`)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = db.Exec(`
-        CREATE TABLE IF NOT EXISTS schedules (
-            schedule_id TEXT PRIMARY KEY,
-            from_account TEXT NOT NULL,
-            to_account TEXT NOT NULL,
-            to_account_name TEXT NOT NULL DEFAULT '',
-            to_bank TEXT,
-            type TEXT NOT NULL DEFAULT '',
-            amount INTEGER NOT NULL,
-            currency TEXT NOT NULL,
-            note TEXT,
-            status TEXT DEFAULT 'scheduled',
-            schedule TEXT NOT NULL,
-            schedule_date TEXT NOT NULL,
-            end_date TEXT
-        )`)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// seed data
-	_, err = db.Exec(`
-        INSERT INTO accounts (branch, account_number, type, account_name, balance, available_balance, currency)
-            VALUES
-            ('Kalasin', '111-111-111', 'Savings', 'AnuchitO', 101282250, 101282250, 'THB'),
-            ('KhonKean', '222-222-222', 'Savings', 'MaiThai', 96588150, 96588150, 'THB'),
-            ('Bangkok', '333-333-333', 'Savings', 'LaumPlearn', 105500, 105500, 'THB'),
-            ('Udon', '444-444-444', 'Savings', 'Laumcing', 199800, 199800, 'THB')
-        ON CONFLICT (account_number) DO UPDATE
-        SET balance = EXCLUDED.balance,
-            available_balance = EXCLUDED.available_balance;
-    `)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = db.Exec(`
-        INSERT INTO transactions (transaction_id, account_number, from_account, to_account, to_account_name, to_bank, amount, currency, type, note, transferred_at)
-        VALUES
-            ('TXN123456789', '111-111-111', '111-111-111', '222-222-222', 'MaiThai', 'KTB',  98982500, 'THB', 'Transfer in', 'Lunch', '2024-11-10 14:22:00'),
-            ('TXN123456789', '222-222-222', '111-111-111', '222-222-222', 'MaiThai', 'KTB', -98982500, 'THB', 'Transfer out', 'Lunch', '2024-11-10 14:22:00'),
-
-            ('TXN120456799', '111-111-111', '111-111-111', '444-444-444', 'Laumcing', 'KBank', -2300000, 'THB', 'Transfer out', 'Dinner', '2024-12-10 14:22:00'),
-            ('TXN120456799', '444-444-444', '111-111-111', '444-444-444', 'Laumcing', 'KBank',  2300000, 'THB', 'Transfer in', 'Dinner', '2024-12-10 14:22:00'),
-
-
-            ('TXN987634521', '111-111-111', '111-111-111', '333-333-333', 'LaumPlearn', 'SCB',  2499850, 'THB', 'Transfer in', 'Dinner', '2025-01-13 18:00:00'),
-            ('TXN987634521', '333-333-333', '111-111-111', '333-333-333', 'LaumPlearn', 'SCB', -2499850, 'THB', 'Transfer out', 'Dinner', '2025-01-13 18:00:00'),
-
-
-            ('TXN123416629', '111-111-111', '111-111-111', '222-222-222', 'MaiThai', 'KTB', -399900, 'THB', 'Transfer out', 'Breakfast', '2025-01-14 14:22:00'),
-            ('TXN123416629', '222-222-222', '111-111-111', '222-222-222', 'MaiThai', 'KTB',  399900, 'THB', 'Transfer in', 'Breakfast', '2025-01-14 14:22:00'),
-
-            ('TXN987654331', '222-222-222', '222-222-222', '333-333-333', 'LaumPlearn', 'SCB', -2394350, 'THB', 'Transfer out', 'Dinner', '2021-09-01 18:00:00'),
-            ('TXN987654331', '333-333-333', '222-222-222', '333-333-333', 'LaumPlearn', 'SCB',  2394350, 'THB', 'Transfer in', 'Dinner', '2021-09-01 18:00:00'),
-
-            ('TXN123434267', '111-111-111', '111-111-111', '444-444-444', 'Laumcing',  'KBank', -2499800, 'THB', 'Transfer out', 'Lunch', '2025-01-10 14:22:00'),
-            ('TXN123456789', '444-444-444', '111-111-111', '444-444-444', 'Laumcing',  'KBank',  2499800, 'THB', 'Transfer in', 'Lunch', '2025-01-10 14:22:00')
-        ON CONFLICT DO NOTHING;
-    `)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = db.Exec(`
-        INSERT INTO schedules (schedule_id, from_account, to_account, to_account_name, to_bank, amount, currency, note, schedule, status, schedule_date, end_date)
-        VALUES
-            ('SCH123456789', '111-111-111', '222-222-222', 'MaiThai', 'KTB', -1899900, 'THB', 'Breakfast', 'once', 'SCHEDULED', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
-            ('SCH987654321', '111-111-111', '333-333-333', 'LaumPlearn', 'SCB', -2499850, 'THB', 'Lunch', 'once', 'SCHEDULED', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
-            ('SCH123434267', '111-111-111', '444-444-444', 'Laumcing', 'KBank', -2398825, 'THB', 'Dinner', 'once', 'SCHEDULED', '2025-09-01 12:00:00', '2030-09-01 12:00:00')
-        ON CONFLICT DO NOTHING;
-    `)
+	err = Seed(db)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -619,6 +519,28 @@ func main() {
 
 	h := &Handler{db: db}
 
+	router := setupRouter(h)
+	// Start server
+	router.Run(":8080")
+}
+
+func GetFirebaseRemoteConfig(sa firebase.ServiceAccount) error {
+	tokenSource := firebase.Authen(sa)
+	token, err := tokenSource.Token()
+	if err != nil {
+		return err
+	}
+
+	conf, err := firebase.GetRemoteConfig(*token, sa.ProjectID)
+	if err != nil {
+		return err
+	}
+
+	firebase.SetRemoteConfig(conf)
+	return nil
+}
+
+func setupRouter(h *Handler) *gin.Engine {
 	router := gin.Default()
 	router.Use(cors.Default())
 	router.Use(gin.Logger())
@@ -643,22 +565,103 @@ func main() {
 		c.JSON(http.StatusOK, firebase.AllConfigs())
 	})
 
-	// Start server
-	router.Run(":8080")
+	return router
 }
 
-func GetFirebaseRemoteConfig(sa firebase.ServiceAccount) error {
-	tokenSource := firebase.Authen(sa)
-	token, err := tokenSource.Token()
-	if err != nil {
-		return err
+func Migrate(db *sql.DB) error {
+	migrations := []string{
+		`CREATE TABLE IF NOT EXISTS accounts (
+            branch TEXT NOT NULL DEFAULT '',
+            account_number TEXT PRIMARY KEY,
+            type TEXT NOT NULL DEFAULT '',
+            account_name TEXT NOT NULL DEFAULT '',
+            balance INTEGER NOT NULL DEFAULT 0,
+            available_balance INTEGER NOT NULL DEFAULT 0,
+            currency TEXT NOT NULL DEFAULT 'THB'
+        )`,
+		`CREATE TABLE IF NOT EXISTS transactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            transaction_id TEXT NOT NULL,
+            account_number TEXT NOT NULL,
+            from_account TEXT NOT NULL,
+            to_account TEXT NOT NULL,
+            to_account_name TEXT NOT NULL DEFAULT '',
+            to_bank TEXT,
+            type TEXT NOT NULL DEFAULT '',
+            amount INTEGER NOT NULL,
+            currency TEXT NOT NULL,
+            note TEXT,
+            transferred_at TEXT NOT NULL
+        )`,
+		`CREATE TABLE IF NOT EXISTS schedules (
+            schedule_id TEXT PRIMARY KEY,
+            from_account TEXT NOT NULL,
+            to_account TEXT NOT NULL,
+            to_account_name TEXT NOT NULL DEFAULT '',
+            to_bank TEXT,
+            type TEXT NOT NULL DEFAULT '',
+            amount INTEGER NOT NULL,
+            currency TEXT NOT NULL,
+            note TEXT,
+            status TEXT DEFAULT 'scheduled',
+            schedule TEXT NOT NULL,
+            schedule_date TEXT NOT NULL,
+            end_date TEXT
+        )`,
 	}
 
-	conf, err := firebase.GetRemoteConfig(*token, sa.ProjectID)
-	if err != nil {
-		return err
+	for _, migration := range migrations {
+		_, err := db.Exec(migration)
+		if err != nil {
+			return err
+		}
 	}
 
-	firebase.SetRemoteConfig(conf)
+	return nil
+}
+
+func Seed(db *sql.DB) error {
+	seeds := []string{
+		`INSERT INTO accounts (branch, account_number, type, account_name, balance, available_balance, currency)
+            VALUES
+            ('Kalasin', '111-111-111', 'Savings', 'AnuchitO', 101282250, 101282250, 'THB'),
+            ('KhonKean', '222-222-222', 'Savings', 'MaiThai', 96588150, 96588150, 'THB'),
+            ('Bangkok', '333-333-333', 'Savings', 'LaumPlearn', 105500, 105500, 'THB'),
+            ('Udon', '444-444-444', 'Savings', 'Laumcing', 199800, 199800, 'THB')
+        ON CONFLICT (account_number) DO UPDATE
+        SET balance = EXCLUDED.balance,
+            available_balance = EXCLUDED.available_balance`,
+
+		`INSERT INTO transactions (transaction_id, account_number, from_account, to_account, to_account_name, to_bank, amount, currency, type, note, transferred_at)
+        VALUES
+            ('TXN123456789', '111-111-111', '111-111-111', '222-222-222', 'MaiThai', 'KTB',  98982500, 'THB', 'Transfer in', 'Lunch', '2024-11-10 14:22:00'),
+            ('TXN123456789', '222-222-222', '111-111-111', '222-222-222', 'MaiThai', 'KTB', -98982500, 'THB', 'Transfer out', 'Lunch', '2024-11-10 14:22:00'),
+            ('TXN120456799', '111-111-111', '111-111-111', '444-444-444', 'Laumcing', 'KBank', -2300000, 'THB', 'Transfer out', 'Dinner', '2024-12-10 14:22:00'),
+            ('TXN120456799', '444-444-444', '111-111-111', '444-444-444', 'Laumcing', 'KBank',  2300000, 'THB', 'Transfer in', 'Dinner', '2024-12-10 14:22:00'),
+            ('TXN987634521', '111-111-111', '111-111-111', '333-333-333', 'LaumPlearn', 'SCB',  2499850, 'THB', 'Transfer in', 'Dinner', '2025-01-13 18:00:00'),
+            ('TXN987634521', '333-333-333', '111-111-111', '333-333-333', 'LaumPlearn', 'SCB', -2499850, 'THB', 'Transfer out', 'Dinner', '2025-01-13 18:00:00'),
+            ('TXN123416629', '111-111-111', '111-111-111', '222-222-222', 'MaiThai', 'KTB', -399900, 'THB', 'Transfer out', 'Breakfast', '2025-01-14 14:22:00'),
+            ('TXN123416629', '222-222-222', '111-111-111', '222-222-222', 'MaiThai', 'KTB',  399900, 'THB', 'Transfer in', 'Breakfast', '2025-01-14 14:22:00'),
+            ('TXN987654331', '222-222-222', '222-222-222', '333-333-333', 'LaumPlearn', 'SCB', -2394350, 'THB', 'Transfer out', 'Dinner', '2021-09-01 18:00:00'),
+            ('TXN987654331', '333-333-333', '222-222-222', '333-333-333', 'LaumPlearn', 'SCB',  2394350, 'THB', 'Transfer in', 'Dinner', '2021-09-01 18:00:00'),
+            ('TXN123434267', '111-111-111', '111-111-111', '444-444-444', 'Laumcing',  'KBank', -2499800, 'THB', 'Transfer out', 'Lunch', '2025-01-10 14:22:00'),
+            ('TXN123456789', '444-444-444', '111-111-111', '444-444-444', 'Laumcing',  'KBank',  2499800, 'THB', 'Transfer in', 'Lunch', '2025-01-10 14:22:00')
+        ON CONFLICT DO NOTHING`,
+
+		`INSERT INTO schedules (schedule_id, from_account, to_account, to_account_name, to_bank, amount, currency, note, schedule, status, schedule_date, end_date)
+        VALUES
+            ('SCH123456789', '111-111-111', '222-222-222', 'MaiThai', 'KTB', -1899900, 'THB', 'Breakfast', 'once', 'SCHEDULED', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
+            ('SCH987654321', '111-111-111', '333-333-333', 'LaumPlearn', 'SCB', -2499850, 'THB', 'Lunch', 'once', 'SCHEDULED', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
+            ('SCH123434267', '111-111-111', '444-444-444', 'Laumcing', 'KBank', -2398825, 'THB', 'Dinner', 'once', 'SCHEDULED', '2025-09-01 12:00:00', '2030-09-01 12:00:00')
+        ON CONFLICT DO NOTHING`,
+	}
+
+	for _, seed := range seeds {
+		_, err := db.Exec(seed)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
