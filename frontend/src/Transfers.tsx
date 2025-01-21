@@ -94,12 +94,9 @@ interface ScheduleValues {
 interface SetScheduleProps {
   onChange: (value: boolean) => void;
   disabled?: boolean;
-  setActiveTab: (value: string) => void;
-  values: ScheduleValues;
-  setValues: (value: ScheduleValues) => void;
 }
 
-export function SetSchedule({ onChange, disabled = false, setActiveTab, setValues, values }: SetScheduleProps) {
+export function SetSchedule({ onChange, disabled = false }: SetScheduleProps) {
   const [active, setActive] = useState(false)
 
   const handleToggle = (value: boolean) => {
@@ -130,8 +127,6 @@ export function SetSchedule({ onChange, disabled = false, setActiveTab, setValue
           </div>
         </Field >
       </div >
-      {active && <ScheduleTab setActiveTab={setActiveTab} setValues={setValues} values={values} />
-      }
     </>
   )
 }
@@ -140,10 +135,10 @@ export function SetSchedule({ onChange, disabled = false, setActiveTab, setValue
 export interface ScheduleTabProps {
   setActiveTab: (value: string) => void;
   values: ScheduleValues;
-  setValues: (values: ScheduleValues) => void;
+  onSetValues: (values: ScheduleValues) => void;
 }
 
-function ScheduleTab({ setActiveTab, setValues, values }: ScheduleTabProps) {
+function ScheduleTab({ setActiveTab, onSetValues, values }: ScheduleTabProps) {
   return (
     <div className="w-full max-w-md">
       <TabGroup>
@@ -161,20 +156,20 @@ function ScheduleTab({ setActiveTab, setValues, values }: ScheduleTabProps) {
             <div className="flex justify-center w-full mb-2">
               <Field className="flex flex-col items-start w-full">
                 <Label className="mb-2" >Scheduled date</Label>
-                <SingleDatePicker onChange={date => setValues({ scheduleDate: date, day: "", startDate: "", endDate: "" })} />
+                <SingleDatePicker onChange={date => onSetValues({ scheduleDate: date, day: "", startDate: "", endDate: "" })} />
               </Field>
             </div>
           </TabPanel>
           <TabPanel>
             <div>
-              <Days onChange={day => setValues({ ...values, day: day })} />
+              <Days onChange={day => onSetValues({ ...values, day: day })} />
               <Field className="flex flex-col items-start m-4">
                 <Label className="mb-2">From</Label>
-                <MonthDatePicker onChange={startDate => setValues({ ...values, startDate: startDate })} />
+                <MonthDatePicker onChange={startDate => onSetValues({ ...values, startDate: startDate })} />
               </Field>
               <Field className="flex flex-col items-start m-4">
                 <Label className="mb-2">To</Label>
-                <MonthDatePicker onChange={endDate => setValues({ ...values, endDate: endDate })} />
+                <MonthDatePicker onChange={endDate => onSetValues({ ...values, endDate: endDate })} />
               </Field>
             </div>
           </TabPanel>
@@ -248,25 +243,31 @@ interface TransferPayload {
 const Transfers = () => {
   const navigate = useNavigate()
 
-  const [loading, setLoading] = useState<boolean>(false)
   const [isOpen, setIsOpen] = useState(false)
   const [disabled, setDisabled] = useState<boolean>(false)
-  const [error, setError] = useState<string>('')
+  const [dialogContent, setDialogContent] = useState({
+    title: "Transfer Successful",
+    description: "Your transfer has been successfully processed."
+  })
+
   const [isSchedule, setIsSchedule] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<string>('ONCE')
 
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>('')
 
   const [fromAccount, setFromAccount] = useState<string>('111-111-111')
   const [toAccount, setToAccount] = useState<string>('')
   const [toBank, setToBank] = useState<string>('')
   const [amount, setAmount] = useState<number>(0)
   const [note, setNote] = useState<string>('')
-  const [values, setValues] = useState<ScheduleValues>({
-    scheduleDate: '',
-    day: '',
-    startDate: '',
-    endDate: '',
-  })
+
+  const [scheduleDate, setScheduleDate] = useState<string>('')
+  const [day, setDay] = useState<string>('')
+  const [startDate, setStartDate] = useState<string>('')
+  const [endDate, setEndDate] = useState<string>('')
+
+
 
 
   const onSelectToAccount = (value: string = ":") => {
@@ -283,7 +284,8 @@ const Transfers = () => {
     navigate('/')
   }
 
-  const openDialog = () => {
+  const openDialog = (content: { title: string, description: string }) => {
+    setDialogContent(content)
     setIsOpen(true)
   }
 
@@ -302,9 +304,6 @@ const Transfers = () => {
     setLoading(true)
     setDisabled(true)
 
-
-    console.log('values:', values)
-
     const payload: ScheduleTransferPayload = {
       fromAccount,
       toAccount,
@@ -313,17 +312,18 @@ const Transfers = () => {
       currency: 'THB',
       note,
       schedule: activeTab,
-      startDate: activeTab === "MONTHLY" ? `${values.startDate}-${values.day} 12:00:00` : values.scheduleDate + ' 12:00:00',
-      endDate: activeTab === "MONTHLY" ? `${values.endDate}-${values.day} 12:00:00` : '',
+      startDate: activeTab === "MONTHLY" ? `${startDate}-${day} 12:00:00` : scheduleDate + ' 12:00:00',
+      endDate: activeTab === "MONTHLY" ? `${endDate}-${day} 12:00:00` : '',
     }
-
-    console.log('payload:', payload)
 
     try {
       const response = await scheduleTransfer(payload)
       if (response.status === 'SCHEDULED') {
         console.log('Schedule successful')
-        openDialog()
+        openDialog({
+          title: "Schedule Successful",
+          description: "Your transfer has been successfully scheduled."
+        })
       } else {
         setDisabled(false)
         setError('Failed to schedule transfer')
@@ -355,7 +355,10 @@ const Transfers = () => {
       const response = await transfer(payload)
       if (response.status === 'Transferred') {
         console.log('Transfer successful')
-        openDialog()
+        openDialog({
+          title: "Transfer Successful",
+          description: "Your transfer has been successfully processed."
+        })
       } else {
         setDisabled(false)
         setError('Failed to process transfer')
@@ -368,6 +371,15 @@ const Transfers = () => {
       setLoading(false)
     }
   }
+
+
+  const onSetValues = (values: ScheduleValues) => {
+    setScheduleDate(values.scheduleDate)
+    setDay(values.day)
+    setStartDate(values.startDate)
+    setEndDate(values.endDate)
+  }
+
 
   return (
     <div>
@@ -383,7 +395,13 @@ const Transfers = () => {
               <ToAccounts disabled={disabled} onSelect={onSelectToAccount} />
               <Number disabled={disabled} label="Amount" onChange={(amount) => { setAmount(amount) }} />
               <Text disabled={disabled} label="Note" onChange={(e) => setNote(e.target.value)} />
-              <SetSchedule disabled={disabled} onChange={handleScheduleToggle} setActiveTab={setActiveTab} setValues={setValues} values={values} />
+              <SetSchedule disabled={disabled} onChange={handleScheduleToggle} />
+              {isSchedule && <ScheduleTab setActiveTab={setActiveTab} onSetValues={onSetValues} values={{
+                scheduleDate: scheduleDate,
+                day: day,
+                startDate: startDate,
+                endDate: endDate
+              }} />}
             </div>
             {error && <p className="text-red-400 text-sm">{error}</p>}
             <div className="flex flex-row justify-center mt-2 mb-2">
@@ -392,18 +410,17 @@ const Transfers = () => {
               </div>
               <div className="flex third-space">
                 {!isSchedule && <TransferButton loading={loading} disabled={disabled} label="Confirm Transfer" onClick={handleSubmitTransfer} />}
-                {isSchedule && <TransferButton loading={loading} disabled={disabled} label="Schedule Transfer" onClick={handleScheduleTransfer} />}
+                {isSchedule && <TransferButton loading={loading} disabled={disabled} label="Confirm Schedule" onClick={handleScheduleTransfer} />}
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      {!isSchedule && <Dialog
+      <Dialog
         isOpen={isOpen}
         onClose={closeDialog}
-        title="Transfer Successful"
-        description="Your transfer has been successfully processed."
+        title={dialogContent.title}
+        description={dialogContent.description}
       >
         <Button
           className="inline-flex items-center gap-2 rounded-md bg-gray-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10"
@@ -412,21 +429,6 @@ const Transfers = () => {
           Got it, thanks!
         </Button>
       </Dialog>
-      }
-      {isSchedule && <Dialog
-        isOpen={isOpen}
-        onClose={closeDialog}
-        title="Schedule Successful"
-        description="Your transfer has been successfully scheduled."
-      >
-        <Button
-          className="inline-flex items-center gap-2 rounded-md bg-gray-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10"
-          onClick={confirmDialog}
-        >
-          Got it, thanks!
-        </Button>
-      </Dialog>
-      }
     </div>
   )
 }
