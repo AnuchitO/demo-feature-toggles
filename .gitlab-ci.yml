@@ -9,7 +9,7 @@ unit-test-backend:
   image: golang:1.23.5-alpine3.21
   script: |
     cd backend
-    go test -v ./...
+    go test
   rules:
     - changes:
         - backend/**/*
