@@ -27,9 +27,14 @@ COPY . .
 
 RUN npm run build
 
+FROM --platform=linux/arm64/v8 python:3.14.0a4-alpine3.21 AS production
+WORKDIR /app
+
+
+COPY --from=base /app/dist/ /app/
+
 EXPOSE 3000
 
-# run preview
-CMD ["npm", "run", "preview"]
+CMD ["python", "-m", "http.server", "3000"]
 
 
