@@ -10,6 +10,7 @@ import { Schedules } from './Schedules'
 import { useFeatureToggles } from './FeatureTogglesContext'
 
 const App = () => {
+
   const { features, loading } = useFeatureToggles()
   const [tab, setTab] = useState('transaction')
   const navigate = useNavigate()
