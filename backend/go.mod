@@ -3,6 +3,7 @@ module demo
 go 1.23.3
 
 require (
+	github.com/caarlos0/env/v10 v10.0.0
 	github.com/gin-contrib/cors v1.7.3
 	github.com/gin-gonic/gin v1.10.0
 	github.com/labstack/echo/v4 v4.13.3

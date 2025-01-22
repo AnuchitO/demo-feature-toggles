@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"demo/config"
 	"demo/firebase"
 
 	"github.com/gin-contrib/cors"
@@ -498,12 +499,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	sa, err := firebase.ReadServiceAccount("service-account.json")
-	if err != nil {
-		log.Fatal(err)
-	}
+	conf := config.C()
 
-	err = GetFirebaseRemoteConfig(sa.Email, sa.PrivateKey, sa.ProjectID)
+	err = GetFirebaseRemoteConfig(conf.Email, conf.PrivateKey, conf.ProjectID)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -511,17 +509,17 @@ func main() {
 	ticker := time.NewTicker(10 * time.Second)
 	go func() {
 		var lastVersion string
-		tokenSource := firebase.Authen(sa.Email, sa.PrivateKey)
+		tokenSource := firebase.Authen(conf.Email, conf.PrivateKey)
 		for range ticker.C {
 			token, err := tokenSource.Token()
 			if err != nil {
 				log.Printf("Error: %v\n", err)
 			}
-			ver, err := firebase.ListVersion(*token, sa.ProjectID)
+			ver, err := firebase.ListVersion(*token, conf.ProjectID)
 			if len(ver) > 0 && ver[0].VersionNumber != lastVersion {
 				lastVersion = ver[0].VersionNumber
 
-				err = GetFirebaseRemoteConfig(sa.Email, sa.PrivateKey, sa.ProjectID)
+				err = GetFirebaseRemoteConfig(conf.Email, conf.PrivateKey, conf.ProjectID)
 				if err != nil {
 					log.Printf("Error: %v\n", err)
 				}
@@ -531,9 +529,14 @@ func main() {
 
 	h := &Handler{db: db}
 
+    port := "8080"
+    if conf.PORT != "" {
+        port = conf.PORT
+    }
+
 	router := setupRouter(h)
 	// Start server
-	router.Run(":8080")
+    router.Run(":" + port)
 }
 
 func GetFirebaseRemoteConfig(email, privateKey, projectID string) error {
