@@ -46,7 +46,7 @@ remoteConfig.settings = {
 const RemoteConfigContext = createContext<RemoteConfigContextValue | null>(null);
 
 // Custom hook for using Remote Config
-export const useRemoteConfig = (): RemoteConfigContextValue => {
+export const useFeatureToggles = (): RemoteConfigContextValue => {
   const context = useContext(RemoteConfigContext);
   if (!context) {
     throw new Error('useRemoteConfig must be used within a RemoteConfigProvider');
@@ -61,6 +61,8 @@ interface RemoteConfigProviderProps {
 // Provider Component
 export const RemoteConfigProvider: React.FC<RemoteConfigProviderProps> = ({ children }) => {
   const [features, setFeatures] = useState<RemoteConfigFeatures>({
+    enableViewTransactionsHistory: false,
+    enableViewScheduledTransactions: false,
     enableScheduleOnce: false,
     enableScheduleMonthly: false,
     transferLimit: 'default',

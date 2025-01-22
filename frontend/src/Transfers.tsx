@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import clsx from 'clsx'
+import { useFeatureToggles } from './RemoteConfigContext'
 import { NumericFormat } from 'react-number-format'
 import { useNavigate } from 'react-router-dom'
 import { Input, Field, Label, Select, Switch, Button, Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
@@ -137,40 +138,57 @@ export interface ScheduleTabProps {
 }
 
 function ScheduleTab({ setActiveTab, onSetScheduleDate, onSetDay, onSetStartDate, onSetEndDate }: ScheduleTabProps) {
+  const { features } = useFeatureToggles()
   return (
     <div className="w-full max-w-md">
       <TabGroup>
         <TabList className="flex gap-4 justify-around">
-          <Tab className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
-            onClick={() => setActiveTab('ONCE')}
-          >Once</Tab>
-          <Tab className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
-            onClick={() => setActiveTab('MONTHLY')}
-          >Monthly</Tab>
+          {
+            features.enableScheduleOnce &&
+            <Tab className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
+              onClick={() => setActiveTab('ONCE')}
+            >
+              Once
+            </Tab>
+          }
+          {
+            features.enableScheduleMonthly &&
+            <Tab className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
+              onClick={() => setActiveTab('MONTHLY')}
+            >
+              Monthly
+            </Tab>
+          }
         </TabList>
         <hr className="border-t border-gray-500 mt-1" />
         <TabPanels className="mt-3">
-          <TabPanel>
-            <div className="flex justify-center w-full mb-2">
-              <Field className="flex flex-col items-start w-full">
-                <Label className="mb-2" >Scheduled date</Label>
-                <SingleDatePicker onChange={date => onSetScheduleDate(date)} />
-              </Field>
-            </div>
-          </TabPanel>
-          <TabPanel>
-            <div>
-              <Days onChange={day => onSetDay(day)} />
-              <Field className="flex flex-col items-start m-4">
-                <Label className="mb-2">From</Label>
-                <MonthDatePicker onChange={startDate => onSetStartDate(startDate)} />
-              </Field>
-              <Field className="flex flex-col items-start m-4">
-                <Label className="mb-2">To</Label>
-                <MonthDatePicker onChange={endDate => onSetEndDate(endDate)} />
-              </Field>
-            </div>
-          </TabPanel>
+          {
+            features.enableScheduleOnce &&
+            <TabPanel>
+              <div className="flex justify-center w-full mb-2">
+                <Field className="flex flex-col items-start w-full">
+                  <Label className="mb-2" >Scheduled date</Label>
+                  <SingleDatePicker onChange={date => onSetScheduleDate(date)} />
+                </Field>
+              </div>
+            </TabPanel>
+          }
+          {
+            features.enableScheduleMonthly &&
+            <TabPanel>
+              <div>
+                <Days onChange={day => onSetDay(day)} />
+                <Field className="flex flex-col items-start m-4">
+                  <Label className="mb-2">From</Label>
+                  <MonthDatePicker onChange={startDate => onSetStartDate(startDate)} />
+                </Field>
+                <Field className="flex flex-col items-start m-4">
+                  <Label className="mb-2">To</Label>
+                  <MonthDatePicker onChange={endDate => onSetEndDate(endDate)} />
+                </Field>
+              </div>
+            </TabPanel>
+          }
         </TabPanels>
       </TabGroup >
     </div >
@@ -231,8 +249,12 @@ interface TransfersProps {
   account: Account;
 }
 
+type TabType = 'ONCE' | 'MONTHLY'
+
 export const Transfers = ({ account }: TransfersProps) => {
   const navigate = useNavigate()
+
+  const { features, loading: loadingFeatureToggle } = useFeatureToggles()
 
   const [isOpen, setIsOpen] = useState(false)
   const [disabled, setDisabled] = useState<boolean>(false)
@@ -242,7 +264,7 @@ export const Transfers = ({ account }: TransfersProps) => {
   })
 
   const [isSchedule, setIsSchedule] = useState<boolean>(false)
-  const [activeTab, setActiveTab] = useState<string>('ONCE')
+  const [activeTab, setActiveTab] = useState<TabType>('ONCE')
 
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
@@ -257,6 +279,18 @@ export const Transfers = ({ account }: TransfersProps) => {
   const [day, setDay] = useState<string>('')
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
+
+  useEffect(() => {
+    if (loadingFeatureToggle) {
+      return
+    }
+
+    if (features.enableScheduleMonthly) {
+      setActiveTab('MONTHLY')
+    } else {
+      setActiveTab('ONCE')
+    }
+  }, [loadingFeatureToggle])
 
 
 
@@ -377,7 +411,10 @@ export const Transfers = ({ account }: TransfersProps) => {
               <ToAccounts disabled={disabled} onSelect={onSelectToAccount} />
               <Number disabled={disabled} label="Amount" onChange={(amount) => { setAmount(amount) }} />
               <Text disabled={disabled} label="Note" onChange={(e) => setNote(e.target.value)} />
-              <SetSchedule disabled={disabled} onChange={handleScheduleToggle} />
+              {
+                (features.enableScheduleOnce || features.enableScheduleMonthly) &&
+                <SetSchedule disabled={disabled} onChange={handleScheduleToggle} />
+              }
               {isSchedule && <ScheduleTab setActiveTab={setActiveTab}
                 onSetDay={setDay}
                 onSetScheduleDate={setScheduleDate}

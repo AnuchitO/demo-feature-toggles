@@ -7,10 +7,10 @@ import { ScheduleButton } from './ScheduleButton'
 import { Accounts } from './Accounts'
 import { Transactions } from './Transactions'
 import { Schedules } from './Schedules'
-import { useRemoteConfig } from './RemoteConfigContext'
+import { useFeatureToggles } from './RemoteConfigContext'
 
 const App = () => {
-  const { features, loading } = useRemoteConfig()
+  const { features, loading } = useFeatureToggles()
   const [tab, setTab] = useState('transaction')
   const navigate = useNavigate()
 
