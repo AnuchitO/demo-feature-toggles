@@ -22,6 +22,17 @@ ENV VITE_BACKEND_BASE_URL=https://demo-ft-api.anuchito.com \
 
 COPY . .
 
-EXPOSE 5173
+RUN bun run build
 
-CMD ["bun", "run", "dev"]
+FROM oven/bun:1.1.34-alpine AS production
+WORKDIR /app
+
+
+COPY --from=base /app/dist/ /app/dist
+
+EXPOSE 3000
+
+# bun run preview
+CMD ["bun", "run", "preview"]
+
+
