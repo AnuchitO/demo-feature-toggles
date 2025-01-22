@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import "./App.css"
 import { TransferButton } from './TransferButton'
@@ -7,10 +7,24 @@ import { ScheduleButton } from './ScheduleButton'
 import { Accounts } from './Accounts'
 import { Transactions } from './Transactions'
 import { Schedules } from './Schedules'
+import { useRemoteConfig } from './RemoteConfigContext'
 
 const App = () => {
+  const { features, loading } = useRemoteConfig()
   const [tab, setTab] = useState('transaction')
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (loading) {
+      return
+    }
+    if (features.enableViewTransactionsHistory) {
+      setTab('transaction')
+    } else {
+      setTab('schedule')
+    }
+
+  }, [loading])
 
 
   const onClickTransfer = () => {
@@ -35,16 +49,17 @@ const App = () => {
           <div className="flex justify-center mb-3" >
             <TransferButton label="Transfer" onClick={onClickTransfer} />
           </div>
-          <div className="flex flex-row">
-            <TransactionButton onClick={onClickTransaction} />
-            <ScheduleButton onClick={onClickSchedule} />
+          <div className="flex flex-row items-center justify-center">
+            {features.enableViewTransactionsHistory && <TransactionButton onClick={onClickTransaction} />}
+            {features.enableViewScheduledTransactions && <ScheduleButton onClick={onClickSchedule} />}
           </div>
         </div>
         <div className="flex flex-col min-h-80  m-4" >
-          {tab === 'transaction' && <>
+          {loading && <div className="text-center p-4">Loading...</div>}
+          {tab === 'transaction' && features.enableViewTransactionsHistory && <>
             <Transactions />
           </>}
-          {tab === 'schedule' && <>
+          {tab === 'schedule' && features.enableViewScheduledTransactions && <>
             <Schedules />
           </>}
         </div>
