@@ -53,55 +53,59 @@ func setupTestDB() (*sql.DB, func(), error) {
 }
 
 func TestGetBalance(t *testing.T) {
-	// Setup test database
-	db, cleanup, err := setupTestDB()
-	assert.NoError(t, err)
-	defer cleanup()
+	t.Run("ValidAccount", func(t *testing.T) {
+		// Setup test database
+		db, cleanup, err := setupTestDB()
+		assert.NoError(t, err)
+		defer cleanup()
 
-	// Initialize the handler with the test DB
-	handler := &Handler{db: db}
+		// Initialize the handler with the test DB
+		handler := &Handler{db: db}
 
-	// Setup Gin router and routes
-	r := gin.Default()
-	r.GET("/account/:accountNumber/balance", handler.GetBalance)
+		// Setup Gin router and routes
+		r := gin.Default()
+		r.GET("/account/:accountNumber/balance", handler.GetBalance)
 
-	// Test GET /account/:accountNumber/balance
-	req, err := http.NewRequest(http.MethodGet, "/account/12345/balance", nil)
-	assert.NoError(t, err)
+		// Test GET /account/:accountNumber/balance
+		req, err := http.NewRequest(http.MethodGet, "/account/12345/balance", nil)
+		assert.NoError(t, err)
 
-	// Record the response
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
+		// Record the response
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
 
-	// Assert the response
-	assert.Equal(t, http.StatusOK, w.Code)
-	expected := `{"branch":"Main","number":"12345","type":"Savings","name":"John Doe","currentBalance":1000,"availableBalance":1000,"currency":"USD"}`
-	assert.JSONEq(t, expected, w.Body.String())
+		// Assert the response
+		assert.Equal(t, http.StatusOK, w.Code)
+		expected := `{"branch":"Main","number":"12345","type":"Savings","name":"John Doe","currentBalance":1000,"availableBalance":1000,"currency":"USD"}`
+		assert.JSONEq(t, expected, w.Body.String())
+	})
 }
 
 func TestGetAllTransactions(t *testing.T) {
-	// Setup test database
-	db, cleanup, err := setupTestDB()
-	assert.NoError(t, err)
-	defer cleanup()
+	t.Run("ValidAccount", func(t *testing.T) {
+		// Setup test database
+		db, cleanup, err := setupTestDB()
+		assert.NoError(t, err)
+		defer cleanup()
 
-	// Initialize the handler with the test DB
-	handler := &Handler{db: db}
+		// Initialize the handler with the test DB
+		handler := &Handler{db: db}
 
-	// Setup Gin router and routes
-	r := gin.Default()
-	r.GET("/transactions", handler.GetAllTransactions)
+		// Setup Gin router and routes
+		r := gin.Default()
+		r.GET("/transactions", handler.GetAllTransactions)
 
-	// Test GET /transactions
-	req, err := http.NewRequest(http.MethodGet, "/transactions", nil)
-	assert.NoError(t, err)
+		// Test GET /transactions
+		req, err := http.NewRequest(http.MethodGet, "/transactions", nil)
+		assert.NoError(t, err)
 
-	// Record the response
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
+		// Record the response
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
 
-	// Assert the response
-	assert.Equal(t, http.StatusOK, w.Code)
-	expected := `[{"transactionId":"txn1","accountNumber":"12345","fromAccount":"12345","toAccount":"54321","toAccountName":"Jane Doe","toBank":"Bank B","type":"Transfer","amount":100,"currency":"USD","note":"Payment for services","transferredAt":"2025-01-01T12:00:00Z"}]`
-	assert.JSONEq(t, expected, w.Body.String())
+		// Assert the response
+		assert.Equal(t, http.StatusOK, w.Code)
+		expected := `[{"transactionId":"txn1","accountNumber":"12345","fromAccount":"12345","toAccount":"54321","toAccountName":"Jane Doe","toBank":"Bank B","type":"Transfer","amount":100,"currency":"USD","note":"Payment for services","transferredAt":"2025-01-01T12:00:00Z"}]`
+		assert.JSONEq(t, expected, w.Body.String())
+	})
 }

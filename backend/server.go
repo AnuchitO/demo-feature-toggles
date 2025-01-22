@@ -191,7 +191,7 @@ func (h *Handler) fetchTransactions(accountNo string) ([]Transaction, error) {
 	}
 	defer rows.Close()
 
-	var transactions []Transaction
+	transactions := []Transaction{}
 	for rows.Next() {
 		var txn Transaction
 		var transferredAt string
