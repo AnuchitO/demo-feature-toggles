@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-backend-demo-feature-toggles
+  namespace: default
+  labels:
+    app: dev-backend-demo-feature-toggles
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dev-backend-demo-feature-toggles
+  template:
+    metadata:
+      labels:
+        app: dev-backend-demo-feature-toggles
+    spec:
+      imagePullSecrets:
+        - name: gitlab-registry-secret
+      containers:
+        - name: demo-feature-toggles-backend
+          image: registry.gitlab.com/anuchito/demo-feature-toggles/backend:v1.0.0
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: '500m'
+            requests:
+              memory: 128Mi
+              cpu: '250m'
+          env:
+            - name: FIREBASE_PROJECT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: dev-backend-demo-feature-toggles-config
+                  key: firebase.project.id
+            - name: FIREBASE_PRIVATE_KEY_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: dev-backend-demo-feature-toggles-config
+                  key: firebase.private.key.id
+            - name: FIREBASE_CLIENT_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: dev-backend-demo-feature-toggles-config
+                  key: firebase.client.email
+            - name: SERVER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: dev-backend-demo-feature-toggles-config
+                  key: server.port

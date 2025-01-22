@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-frontend-demo-feature-toggles
+  namespace: default
+  labels:
+    app: dev-frontend-demo-feature-toggles
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dev-frontend-demo-feature-toggles
+  template:
+    metadata:
+      labels:
+        app: dev-frontend-demo-feature-toggles
+    spec:
+      imagePullSecrets:
+        - name: gitlab-registry-secret
+      containers:
+        - name: frontend
+          image: registry.gitlab.com/anuchito/demo-feature-toggles/frontend:v1.0.0
+          ports:
+            - containerPort: 5173
+          resources:
+            requests:
+              cpu: '500m'
+              memory: '512Mi'
+            limits:
+              cpu: '1000m'
+              memory: '1Gi'

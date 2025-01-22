@@ -1,0 +1,117 @@
+stages:
+  - test
+  - e2e
+  - build
+  - deploy
+
+unit-test-backend:
+  stage: test
+  image: golang:1.23.5-alpine3.21
+  script: |
+    cd backend
+    go test -v ./...
+  rules:
+    - changes:
+        - backend/**/*
+
+unit-test-frontend:
+  stage: test
+  image: node:20.17
+  script: |
+    cd frontend
+    npm install
+    npm run test
+  rules:
+    - changes:
+        - frontend/**/*
+
+build-backend-image:
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  stage: build
+  needs: ["unit-test-backend"]
+  script: |
+    echo "Building the backend image"
+    VERSION=$(cat backend/VERSION)
+    echo "version:${VERSION}"
+    IMAGE_NAME=$CI_REGISTRY_IMAGE/backend:$VERSION
+    echo "image:"$IMAGE_NAME
+    echo "Building image using Kaniko"
+    /kaniko/executor \
+        --context "${CI_PROJECT_DIR}/backend" \
+        --dockerfile "${CI_PROJECT_DIR}/backend/Dockerfile" \
+        --destination "${IMAGE_NAME}"
+  rules:
+    - changes:
+        - backend/VERSION
+
+gitops-dev-versioning-backend:
+  stage: deploy
+  needs: ["build-backend-image"]
+  script: |
+    # Set up Git user information
+    REPO=https://${GITLAB_USER_NAME}:${GITLAB_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git
+    git clone --single-branch --branch main $REPO gitops
+    cd gitops
+    git config user.email "ci@gitlab.com"
+    git config user.name "🤖 ci pipeline"
+    VERSION=$(cat backend/VERSION)
+    echo "version:${VERSION}"
+    IMAGE_NAME=$CI_REGISTRY_IMAGE/backend:$VERSION
+    echo "image name: ${IMAGE_NAME}"
+    sed -i -E "s|registry.gitlab.com/.*/backend.*$|${IMAGE_NAME}|" infra/dev/deployment.yaml
+    git add infra/dev/deployment.yaml
+    git commit -m "[skip ci] 🤖 change dev docker image version to ${IMAGE_NAME}"
+    git rebase -r main
+    git push -o ci.skip origin main
+  rules:
+    - changes:
+        - backend/VERSION
+
+build-frontend-dev-image:
+  image: gcr.io/kaniko-project/executor:v1.23.2-debug
+  stage: build
+  needs: ["unit-test-frontend"]
+  script: |
+    echo "Building the frontend image"
+    VERSION=$(cat frontend/VERSION)
+    echo "version:${VERSION}"
+    IMAGE_NAME=$CI_REGISTRY_IMAGE/frontend:${VERSION}-dev
+    echo "image:"$IMAGE_NAME
+    /kaniko/executor \
+      --context ${CI_PROJECT_DIR}/frontend \
+      --dockerfile ${CI_PROJECT_DIR}/frontend/Dockerfile \
+      --destination ${IMAGE_NAME} \
+      --build-arg VITE_BACKEND_BASE_URL=https://demo-ft-api.anuchito.com \
+      --build-arg VITE_API_KEY=${VITE_API_KEY} \
+      --build-arg VITE_AUTH_DOMAIN=${VITE_AUTH_DOMAIN} \
+      --build-arg VITE_PROJECT_ID=${VITE_PROJECT_ID} \
+      --build-arg VITE_APP_ID=${VITE_APP_ID}
+
+  rules:
+    - changes:
+        - frontend/VERSION
+
+gitops-dev-versioning-frontend-dev:
+  stage: deploy
+  needs: ["build-frontend-dev-image"]
+  script: |
+    # Set up Git user information
+    REPO=https://${GITLAB_USER_NAME}:${GITLAB_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git
+    git clone --single-branch --branch main $REPO gitops
+    cd gitops
+    git config user.email "ci@gitlab.com"
+    git config user.name "🤖 ci pipeline"
+    VERSION=$(cat frontend/VERSION)
+    echo "version:${VERSION}"
+    IMAGE_NAME=$CI_REGISTRY_IMAGE/frontend:${VERSION}-dev
+    echo "image name: ${IMAGE_NAME}"
+    sed -i -E "s|registry.gitlab.com/.*/frontend.*$|${IMAGE_NAME}|" infra/dev/deployment-fed.yaml
+    git add infra/dev/deployment-fed.yaml
+    git commit -m "[skip ci] 🤖 change dev docker image version to ${IMAGE_NAME}"
+    git rebase -r main
+    git push -o ci.skip origin main
+  rules:
+    - changes:
+        - frontend/VERSION

@@ -1,0 +1,52 @@
+# Ignore all Terraform state files
+.terraform*
+
+# Ignore all .env files
+.env
+
+# Ignore all .keep files
+.keep
+
+# Ignore all terraform.t files
+terraform.t
+
+# Ignore all files ending in .tfvars
+*.tfvars
+
+# Ignore all files ending in .tfstate
+*.tfstate
+
+# Ignore all files ending in .tfplan
+*.tfplan
+
+# Ignore all files ending in .tflock
+*.tflock
+
+# Ignore all files ending in .tfcache
+*.tfcache
+
+# Ignore all files ending in .tfstate.backup
+*.tfstate.backup
+
+# Ignore all files ending in .tfstate.lock.backup
+*.tfstate.lock.backup
+
+# Ignore all files ending in .tfstate.snap
+*.tfstate.snap
+
+# Ignore all files ending in .tfstate.snap.lock
+*.tfstate.snap.lock
+
+# Ignore all files ending in .tfstate.snap.backup
+*.tfstate.snap.backup
+
+# Ignore all files ending in .tfstate.snap.lock.backup
+*.tfstate.snap.lock.backup
+
+# Ignore all files ending in .tfstate.backup.lock
+*.tfstate.backup.lock
+
+# Ignore all files ending in .tfstate.lock
+*.tfstate.lock
+
+backend.conf

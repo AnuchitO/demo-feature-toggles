@@ -529,14 +529,14 @@ func main() {
 
 	h := &Handler{db: db}
 
-    port := "8080"
-    if conf.PORT != "" {
-        port = conf.PORT
-    }
+	port := "8080"
+	if conf.PORT != "" {
+		port = conf.PORT
+	}
 
 	router := setupRouter(h)
 	// Start server
-    router.Run(":" + port)
+	router.Run(":" + port)
 }
 
 func GetFirebaseRemoteConfig(email, privateKey, projectID string) error {
@@ -565,6 +565,11 @@ func setupRouter(h *Handler) *gin.Engine {
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	})
+
+	// Health Check
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
 	// Routes

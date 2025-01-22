@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-backend-demo-feature-toggles
+  namespace: default
+  labels:
+    app: dev-backend-demo-feature-toggles
+spec:
+  selector:
+    app: dev-backend-demo-feature-toggles
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  # type: LoadBalancer
