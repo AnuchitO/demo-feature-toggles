@@ -7,6 +7,12 @@ jest.mock('react-dom', () => ({
   findDOMNode: jest.fn(),
 }));
 
+jest.mock('./services/api', () => ({
+  api: {
+    get: jest.fn(),
+  },
+}))
+
 
 // mock TextEncoder
 global.TextEncoder = TextEncoder;
