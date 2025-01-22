@@ -49,7 +49,7 @@ spec:
                   key: firebase.project.id
             - name: FIREBASE_PRIVATE_KEY_ID
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   name: dev-backend-demo-feature-toggles-config
                   key: firebase.private.key.id
             - name: FIREBASE_CLIENT_EMAIL
