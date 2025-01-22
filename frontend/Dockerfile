@@ -1,4 +1,4 @@
-FROM node:20.18.2-bullseye-slim AS base
+FROM --platform=linux/arm64/v8 node:bookworm-slim AS base
 # RUN apk update
 # RUN apk add --no-cache libstdc++
 
@@ -27,7 +27,7 @@ COPY . .
 
 RUN npm run build
 
-FROM node:20.18.2-bullseye-slim  AS production
+FROM --platform=linux/arm64/v8 node:bookworm-slim AS production
 WORKDIR /app
 
 
