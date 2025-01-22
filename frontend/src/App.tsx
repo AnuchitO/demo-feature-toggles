@@ -7,7 +7,7 @@ import { ScheduleButton } from './ScheduleButton'
 import { Accounts } from './Accounts'
 import { Transactions } from './Transactions'
 import { Schedules } from './Schedules'
-import { useFeatureToggles } from './RemoteConfigContext'
+import { useFeatureToggles } from './FeatureTogglesContext'
 
 const App = () => {
   const { features, loading } = useFeatureToggles()

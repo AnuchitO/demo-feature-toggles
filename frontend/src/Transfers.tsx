@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import clsx from 'clsx'
-import { useFeatureToggles } from './RemoteConfigContext'
+import { useFeatureToggles } from './FeatureTogglesContext'
 import { NumericFormat } from 'react-number-format'
 import { useNavigate } from 'react-router-dom'
 import { Input, Field, Label, Select, Switch, Button, Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
@@ -130,14 +130,14 @@ export function SetSchedule({ onChange, disabled = false }: SetScheduleProps) {
 
 
 export interface ScheduleTabProps {
-  setActiveTab: (value: string) => void;
+  onSetActiveTab: (value: TabType) => void;
   onSetDay: (day: string) => void;
   onSetScheduleDate: (date: string) => void;
   onSetStartDate: (date: string) => void;
   onSetEndDate: (date: string) => void;
 }
 
-function ScheduleTab({ setActiveTab, onSetScheduleDate, onSetDay, onSetStartDate, onSetEndDate }: ScheduleTabProps) {
+function ScheduleTab({ onSetActiveTab, onSetScheduleDate, onSetDay, onSetStartDate, onSetEndDate }: ScheduleTabProps) {
   const { features } = useFeatureToggles()
   return (
     <div className="w-full max-w-md">
@@ -146,7 +146,7 @@ function ScheduleTab({ setActiveTab, onSetScheduleDate, onSetDay, onSetStartDate
           {
             features.enableScheduleOnce &&
             <Tab className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
-              onClick={() => setActiveTab('ONCE')}
+              onClick={() => onSetActiveTab('ONCE')}
             >
               Once
             </Tab>
@@ -154,7 +154,7 @@ function ScheduleTab({ setActiveTab, onSetScheduleDate, onSetDay, onSetStartDate
           {
             features.enableScheduleMonthly &&
             <Tab className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
-              onClick={() => setActiveTab('MONTHLY')}
+              onClick={() => onSetActiveTab('MONTHLY')}
             >
               Monthly
             </Tab>
@@ -285,12 +285,14 @@ export const Transfers = ({ account }: TransfersProps) => {
       return
     }
 
-    if (features.enableScheduleMonthly) {
-      setActiveTab('MONTHLY')
-    } else {
-      setActiveTab('ONCE')
+    if (isSchedule) {
+      if (features.enableScheduleOnce) {
+        setActiveTab('ONCE')
+      } else if (features.enableScheduleMonthly) {
+        setActiveTab('MONTHLY')
+      }
     }
-  }, [loadingFeatureToggle])
+  }, [loadingFeatureToggle, isSchedule])
 
 
 
@@ -415,11 +417,11 @@ export const Transfers = ({ account }: TransfersProps) => {
                 (features.enableScheduleOnce || features.enableScheduleMonthly) &&
                 <SetSchedule disabled={disabled} onChange={handleScheduleToggle} />
               }
-              {isSchedule && <ScheduleTab setActiveTab={setActiveTab}
-                onSetDay={setDay}
-                onSetScheduleDate={setScheduleDate}
-                onSetStartDate={setStartDate}
-                onSetEndDate={setEndDate}
+              {isSchedule && <ScheduleTab onSetActiveTab={(tab) => setActiveTab(tab)}
+                onSetScheduleDate={(date) => setScheduleDate(date)}
+                onSetDay={(day) => setDay(day)}
+                onSetStartDate={(date) => setStartDate(date)}
+                onSetEndDate={(date) => setEndDate(date)}
               />}
             </div>
             {error && <p className="text-red-400 text-sm">{error}</p>}

@@ -59,7 +59,7 @@ interface RemoteConfigProviderProps {
 }
 
 // Provider Component
-export const RemoteConfigProvider: React.FC<RemoteConfigProviderProps> = ({ children }) => {
+export const FeatureTogglesProvider: React.FC<RemoteConfigProviderProps> = ({ children }) => {
   const [features, setFeatures] = useState<RemoteConfigFeatures>({
     enableViewTransactionsHistory: false,
     enableViewScheduledTransactions: false,
