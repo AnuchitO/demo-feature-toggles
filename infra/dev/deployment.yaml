@@ -47,7 +47,7 @@ spec:
                 configMapKeyRef:
                   name: dev-backend-demo-feature-toggles-config
                   key: firebase.project.id
-            - name: FIREBASE_PRIVATE_KEY_ID
+            - name: FIREBASE_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:
                   name: dev-backend-demo-feature-toggles-config
