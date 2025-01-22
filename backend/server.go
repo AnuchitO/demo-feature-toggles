@@ -291,9 +291,16 @@ func (h *Handler) getAccountName(accountNo string) (string, error) {
 
 // CreateSchedules handler
 func (h *Handler) CreateSchedules(c *gin.Context) {
+	fromAccount := c.Param("accountNumber")
 	var req ScheduleRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleScheduleError(c, err, "invalid request body")
+		return
+	}
+
+	// schedule type must be "ONCE" or "MONTHLY" only if not return error
+	if req.Schedule != "ONCE" && req.Schedule != "MONTHLY" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid schedule type"})
 		return
 	}
 
@@ -304,11 +311,11 @@ func (h *Handler) CreateSchedules(c *gin.Context) {
 	}
 
 	// Check if schedule type is enabled
-	if firebase.IsDisabled("enable_schedule_once") && req.Schedule == "once" {
+	if firebase.IsDisabled("enable_schedule_once") && req.Schedule == "ONCE" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "one time schedule transfer is unavailable"})
 		return
 	}
-	if firebase.IsDisabled("enable_schedule_monthly") && req.Schedule == "monthly" {
+	if firebase.IsDisabled("enable_schedule_monthly") && req.Schedule == "MONTHLY" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "monthly schedule transfer is unavailable"})
 		return
 	}
@@ -327,7 +334,7 @@ func (h *Handler) CreateSchedules(c *gin.Context) {
 	_, err = h.db.Exec(`
         INSERT INTO schedules (schedule_id, from_account, to_account, to_account_name, to_bank, amount, currency, note, status, schedule, schedule_date, end_date)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);`,
-		schID, req.FromAccount, req.ToAccount, toAccountName, req.ToBank, req.Amount, req.Currency, req.Note, status, req.Schedule, req.StartDate, req.EndDate)
+		schID, fromAccount, req.ToAccount, toAccountName, req.ToBank, req.Amount, req.Currency, req.Note, status, req.Schedule, req.StartDate, req.EndDate)
 	if err != nil {
 		handleScheduleError(c, err, "unable to schedule transfer")
 		return
@@ -465,68 +472,6 @@ func (h *Handler) CreateTransfer(c *gin.Context) {
 func scheduleID() string {
 	rd := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return fmt.Sprintf("SCH%v", rd.Intn(1000000000))
-}
-
-func (h *Handler) ScheduleTransfer(c *gin.Context) {
-	var req ScheduleRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if firebase.IsEnabled("enable_schedule_once") && req.Schedule == "once" {
-		schID := scheduleID()
-		status := "scheduled"
-
-		_, err := h.db.Exec(`
-        INSERT INTO schedules (schedule_id, from_account, to_account, amount, currency, note, status, schedule, schedule_date, end_date)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
-			schID, req.FromAccount, req.ToAccount, req.Amount, req.Currency, req.Note, status, req.Schedule, req.StartDate, req.EndDate)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to schedule transfer"})
-			return
-		}
-
-		resp := ScheduleResponse{
-			ScheduleID:   schID,
-			Status:       status,
-			NextRunDate:  req.StartDate,
-			EndDate:      req.EndDate,
-			ScheduleType: req.Schedule,
-		}
-
-		c.JSON(http.StatusOK, resp)
-		return
-	}
-
-	if firebase.IsEnabled("enable_schedule_monthly") && req.Schedule == "monthly" {
-		schID := scheduleID()
-		status := "scheduled"
-
-		_, err := h.db.Exec(`
-        INSERT INTO schedules (schedule_id, from_account, to_account, amount, currency, note, status, schedule, schedule_date, end_date)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
-			schID, req.FromAccount, req.ToAccount, req.Amount, req.Currency, req.Note, status, req.Schedule, req.StartDate, req.EndDate)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to schedule transfer"})
-			return
-		}
-
-		resp := ScheduleResponse{
-			ScheduleID:   schID,
-			Status:       status,
-			NextRunDate:  req.StartDate,
-			EndDate:      req.EndDate,
-			ScheduleType: req.Schedule,
-		}
-
-		c.JSON(http.StatusOK, resp)
-		return
-	}
-
-	msg := fmt.Sprintf("%s schedule transfer is unavailable", req.Schedule)
-	c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 }
 
 func main() {
@@ -717,9 +662,9 @@ func Seed(db *sql.DB) error {
 
 		`INSERT INTO schedules (schedule_id, from_account, to_account, to_account_name, to_bank, amount, currency, note, schedule, status, schedule_date, end_date)
         VALUES
-            ('SCH123456789', '111-111-111', '222-222-222', 'MaiThai', 'KTB', -1899900, 'THB', 'Breakfast', 'once', 'SCHEDULED', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
-            ('SCH987654321', '111-111-111', '333-333-333', 'LaumPlearn', 'SCB', -2499850, 'THB', 'Lunch', 'once', 'SCHEDULED', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
-            ('SCH123434267', '111-111-111', '444-444-444', 'Laumcing', 'KBank', -2398825, 'THB', 'Dinner', 'once', 'SCHEDULED', '2025-09-01 12:00:00', '2030-09-01 12:00:00')
+            ('SCH123456789', '111-111-111', '222-222-222', 'MaiThai', 'KTB', -1899900, 'THB', 'Breakfast', 'ONCE', 'SCHEDULED', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
+            ('SCH987654321', '111-111-111', '333-333-333', 'LaumPlearn', 'SCB', -2499850, 'THB', 'Lunch', 'ONCE', 'SCHEDULED', '2025-09-01 12:00:00', '2030-09-01 12:00:00'),
+            ('SCH123434267', '111-111-111', '444-444-444', 'Laumcing', 'KBank', -2398825, 'THB', 'Dinner', 'ONCE', 'SCHEDULED', '2025-09-01 12:00:00', '2030-09-01 12:00:00')
         ON CONFLICT DO NOTHING`,
 	}
 
