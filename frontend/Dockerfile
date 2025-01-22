@@ -1,6 +1,6 @@
-FROM oven/bun:1.1.34-alpine AS base
-RUN apk update
-RUN apk add --no-cache libstdc++
+FROM node:20.18.2-bullseye-slim AS base
+# RUN apk update
+# RUN apk add --no-cache libstdc++
 
 
 WORKDIR /app
@@ -16,7 +16,7 @@ COPY *.lockb .
 COPY vite.config.ts .
 
 
-RUN bun install
+RUN npm install
 ENV VITE_BACKEND_BASE_URL=https://demo-ft-api.anuchito.com \
     VITE_API_KEY=${VITE_API_KEY} \
     VITE_AUTH_DOMAIN=${VITE_AUTH_DOMAIN} \
@@ -25,9 +25,9 @@ ENV VITE_BACKEND_BASE_URL=https://demo-ft-api.anuchito.com \
 
 COPY . .
 
-RUN bun run build
+RUN npm run build
 
-FROM oven/bun:1.1.34-alpine AS production
+FROM node:20.18.2-bullseye-slim  AS production
 WORKDIR /app
 
 
@@ -35,7 +35,7 @@ COPY --from=base /app/dist/ /app/dist
 
 EXPOSE 3000
 
-# bun run preview
-CMD ["bun", "run", "preview"]
+# run preview
+CMD ["npm", "run", "preview"]
 
 
