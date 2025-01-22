@@ -27,10 +27,10 @@ func ReadServiceAccount(filename string) (ServiceAccount, error) {
 	return sa, err
 }
 
-func Authen(c ServiceAccount) oauth2.TokenSource {
+func Authen(email, privateKey string) oauth2.TokenSource {
 	cf := &jwt.Config{
-		Email:      c.Email,
-		PrivateKey: []byte(c.PrivateKey),
+		Email:      email,
+		PrivateKey: []byte(privateKey),
 		Scopes: []string{
 			"https://www.googleapis.com/auth/firebase.remoteconfig",
 		},

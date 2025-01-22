@@ -503,7 +503,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = GetFirebaseRemoteConfig(sa)
+	err = GetFirebaseRemoteConfig(sa.Email, sa.PrivateKey, sa.ProjectID)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -511,7 +511,7 @@ func main() {
 	ticker := time.NewTicker(10 * time.Second)
 	go func() {
 		var lastVersion string
-		tokenSource := firebase.Authen(sa)
+		tokenSource := firebase.Authen(sa.Email, sa.PrivateKey)
 		for range ticker.C {
 			token, err := tokenSource.Token()
 			if err != nil {
@@ -521,7 +521,7 @@ func main() {
 			if len(ver) > 0 && ver[0].VersionNumber != lastVersion {
 				lastVersion = ver[0].VersionNumber
 
-				err = GetFirebaseRemoteConfig(sa)
+				err = GetFirebaseRemoteConfig(sa.Email, sa.PrivateKey, sa.ProjectID)
 				if err != nil {
 					log.Printf("Error: %v\n", err)
 				}
@@ -536,14 +536,14 @@ func main() {
 	router.Run(":8080")
 }
 
-func GetFirebaseRemoteConfig(sa firebase.ServiceAccount) error {
-	tokenSource := firebase.Authen(sa)
+func GetFirebaseRemoteConfig(email, privateKey, projectID string) error {
+	tokenSource := firebase.Authen(email, privateKey)
 	token, err := tokenSource.Token()
 	if err != nil {
 		return err
 	}
 
-	conf, err := firebase.GetRemoteConfig(*token, sa.ProjectID)
+	conf, err := firebase.GetRemoteConfig(*token, projectID)
 	if err != nil {
 		return err
 	}
