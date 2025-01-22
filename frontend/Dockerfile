@@ -12,8 +12,10 @@ ARG VITE_APP_ID
 
 COPY package*.json .
 COPY *.lockb .
+COPY vite.config.ts .
 
-RUN bun install --frozen-lockfile
+
+RUN bun install
 ENV VITE_BACKEND_BASE_URL=https://demo-ft-api.anuchito.com \
     VITE_API_KEY=${VITE_API_KEY} \
     VITE_AUTH_DOMAIN=${VITE_AUTH_DOMAIN} \
