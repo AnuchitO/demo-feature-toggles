@@ -27,12 +27,6 @@ COPY . .
 
 RUN npm run build
 
-FROM --platform=linux/arm64/v8 node:bookworm-slim AS production
-WORKDIR /app
-
-
-COPY --from=base /app/dist/ /app/dist
-
 EXPOSE 3000
 
 # run preview
