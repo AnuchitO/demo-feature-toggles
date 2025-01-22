@@ -350,98 +350,109 @@ func transactionID() string {
 	return fmt.Sprintf("TXN%v", rd.Intn(1000000000))
 }
 
+// Utility function to handle errors consistently
+func handleTransferError(c *gin.Context, err error, msg string) {
+	if err != nil {
+		log.Printf("Error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
+	}
+}
+
+// Helper function to validate account balance
+func (h *Handler) validateAccountBalance(accountNo string, amount int64) (int64, error) {
+	var balance int64
+	err := h.db.QueryRow(`
+        SELECT balance
+        FROM accounts
+        WHERE account_number = $1`, accountNo).Scan(&balance)
+	return balance, err
+}
+
+// Helper function to create a transaction
+func (h *Handler) createTransaction(tx *sql.Tx, txID, fromAccount, toAccount, toAccountName, toBank, currency, note string, amount int64, stamp string) error {
+	_, err := tx.Exec(`
+        INSERT INTO transactions (transaction_id, account_number, from_account, to_account, to_account_name, to_bank, amount, currency, type, note, transferred_at)
+        VALUES
+            ($1, $2, $2, $3, $4, $5, $6, $7, $8, $9, $10),
+            ($1, $3, $2, $3, $4, $5, $11, $7, $12, $9, $10)
+        `,
+		txID, fromAccount, toAccount, toAccountName, toBank, -amount, currency, "Transfer out", note, stamp, amount, "Transfer in")
+	return err
+}
+
+// CreateTransfer handler
 func (h *Handler) CreateTransfer(c *gin.Context) {
+	fromAccount := c.Param("accountNumber")
 	var req TransferRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// 0. validate account balance
-	var balance int64
-	err := h.db.QueryRow(`
-        SELECT balance
-        FROM accounts
-        WHERE account_number = $1`,
-		req.FromAccount).Scan(&balance)
+	// Validate account balance
+	balance, err := h.validateAccountBalance(fromAccount, req.Amount)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
+		handleTransferError(c, err, "unable to check account balance")
 		return
 	}
 	if balance < req.Amount {
-		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "insufficient balance"})
 		return
 	}
 
-	var toAccountName string
-	err = h.db.QueryRow(`
-        SELECT account_name
-        FROM accounts
-        WHERE account_number = $1`,
-		req.ToAccount).Scan(&toAccountName)
+	// Get recipient account name
+	toAccountName, err := h.getAccountName(req.ToAccount)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
+		handleTransferError(c, err, "unable to retrieve recipient account name")
 		return
 	}
 
+	// Begin transaction
 	tx, err := h.db.Begin()
+	if err != nil {
+		handleTransferError(c, err, "unable to create transfer")
+		return
+	}
+
 	txID := transactionID()
 	stamp := time.Now().Format("2006-01-02 15:04:05")
 
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
+	// Create the transaction entries
+	if err := h.createTransaction(tx, txID, fromAccount, req.ToAccount, toAccountName, req.ToBank, req.Currency, req.Note, req.Amount, stamp); err != nil {
+		handleTransferError(c, err, "unable to create transaction")
 		return
 	}
 
-	_, err = tx.Exec(`
-        INSERT INTO transactions (transaction_id, account_number, from_account, to_account, to_account_name, to_bank, amount, currency, type, note, transferred_at)
-        VALUES
-            ($1, $2, $2, $3, $4, $5, $6, $7, $8, $9, $10),
-            ($1, $3, $2, $3, $4, $5, $11, $7, $12, $9, $10)
-        `,
-		txID, req.FromAccount, req.ToAccount, toAccountName, req.ToBank, -req.Amount, req.Currency, "Transfer out", req.Note, stamp, req.Amount, "Transfer in")
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
-		return
-	}
-
-	// 3. update balance in accounts TABLE
+	// Update the balance in the sender account
 	_, err = tx.Exec(`
         UPDATE accounts
         SET balance = balance - $1
         WHERE account_number = $2`,
-		req.Amount, req.FromAccount)
-	// 4. return response
+		req.Amount, fromAccount)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
+		handleTransferError(c, err, "unable to update sender balance")
 		return
 	}
 
-	// 5. update balance in to_account
+	// Update the balance in the recipient account
 	_, err = tx.Exec(`
         UPDATE accounts
         SET balance = balance + $1
         WHERE account_number = $2`,
 		req.Amount, req.ToAccount)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
+		handleTransferError(c, err, "unable to update recipient balance")
 		return
 	}
 
+	// Commit the transaction
 	err = tx.Commit()
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
+		handleTransferError(c, err, "unable to commit transfer")
 		return
 	}
 
+	// Send the response with transaction details
 	resp := TransferResponse{
 		TransactionID: txID,
 		Status:        "TRANSFERRED",
