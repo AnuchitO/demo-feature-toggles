@@ -4,10 +4,32 @@ Demo Feature Toggles
 
 ## Workshops:
 
-### Implement Schedule Transfer Feature
-Given the Transfer feature is completed, implement the Schedule Transfer feature.
+### [STORY-1] View Transactions History
 
-User Story: Schedule Money Transfers
+Title: View Transactions History
+User Story: View Transactions History
+
+As a bank customer,
+I want to view my transaction history,
+So that I can track my spending and monitor my account activity.
+
+📝 Acceptance Criteria:
+Given I am logged into my bank account,
+When I navigate to the transactions history section,
+Then I should see a list of my transactions, including:
+
+Transaction type
+Transaction date
+Transaction amounts
+
+Note: the API endpont already exists GET /accounts/:accountNumber/transactions
+
+
+### [STORY-2] Schedule Money Transfers (ONCE)
+
+Title: Schedule Money Transfers (ONCE)
+User Story: Schedule Money Transfers (ONCE)
+
 As a bank customer,
 I want to schedule money transfers for future dates,
 So that I can automate recurring payments and manage my finances better.
@@ -15,32 +37,66 @@ So that I can automate recurring payments and manage my finances better.
 📝 Acceptance Criteria:
 Given I am logged into my bank account,
 When I navigate to the scheduled transfer section,
-Then I should be able to set a recipient, transfer amount, and schedule date for **one-time**.
+Then I should be able to set a recipient, transfer amount, and schedule date for one-time.
 
+Technical guide:
+- the API endpoint POST /accounts/:accountNumber/schedules or add functionality to the existing POST /accounts/:accountNumber/transfers
+- the API endpoint Transfer alreay done POST /accounts/:accountNumber/transfers
+
+### [STORY-3] Schedule Money Transfers (MONTHLY)
+
+Title: Schedule Money Transfers (MONTHLY)
+User Story: Schedule Money Transfers (MONTHLY)
+
+As a bank customer,
+I want to schedule money transfers for future dates,
+So that I can automate recurring payments and manage my finances better.
+
+📝 Acceptance Criteria:
 Given I am logged into my bank account,
 When I navigate to the scheduled transfer section,
-Then I should be able to set a recipient, transfer amount, and schedule date for **monthly**.
+Then I should be able to set a recipient, transfer amount, and schedule date for monthly.
+
+Technical guide:
+- the API endpoint POST /accounts/:accountNumber/schedules or add functionality to the existing POST /accounts
+
+### [STORY-4] View Scheduled Transactions
+
+Title: View Scheduled transactions
+User Story: View Scheduled Transactions
+
+As a bank customer,
+I want to view my scheduled transactions,
+So that I can track my upcoming payments and manage my finances better.
+
+📝 Acceptance Criteria:
+Given I am logged into my bank account,
+When I navigate to the scheduled transactions section,
+Then I should see a list of my scheduled transactions, including:
+
+recipient name, account number, bank, transfer amount, and schedule date.
 
 
-## Features
-### 📚 Real-Time Balance Update
-Title: Real-Time Balance Update
+## Existing Features
+### 📚 View Account Balance
+Title: View Account Balance
 User Story:
 As a bank customer,
-I want to see my account balance update in real-time after transactions,
-So that I can be confident my financial records are up-to-date without refreshing the page.
+I want to see my account balance update in after transactions,
+So that I can be confident my financial records are up-to-date.
 
 Acceptance Criteria:
 
-- Real-time balance updates are shown after successful transactions.
-- Feature can be toggled on/off using environment variables (backend) and Firebase Remote Config (frontend).
-- Fallback to manual refresh when the feature is disabled
+Given I am logged into my bank account,
+When I navigate to the account balance section,
+Then I should see my current account balance.
 
 ⚙️ Feature Toggle Details:
 Toggle Name: `ENABLE_REALTIME_BALANCE_UPDATE`
 Enabled Behavior: Shows real-time balance updates.
 Disabled Behavior: Falls back to manual refresh for balance updates.
 
+note: the feature toggle is already implemented in the codebase and removed from the codebase
 
 
 ### 📚 User Story: Money Transfers
@@ -72,63 +128,3 @@ Toggle Name: `ENABLE_MONEY_TRANSFER`
 Enabled Behavior: Allows users to perform money transfers.
 Disabled Behavior: Shows a message indicating the feature is unavailable.
 
-
-### 📚 User Story: Scheduled Transfers
-Title: Schedule Money Transfers
-
-As a bank customer,
-I want to schedule money transfers for future dates,
-So that I can automate recurring payments and manage my finances better.
-
-📝 Acceptance Criteria:
-Given I am logged into my bank account,
-When I navigate to the scheduled transfer section,
-Then I should be able to set a recipient, transfer amount, and schedule date.
-
-Given I successfully schedule a transfer,
-When I view my scheduled transfers,
-Then I should see the details of my scheduled transactions.
-
-Given the scheduled transfer date has arrived,
-When the system processes the transfer,
-Then the recipient account should be credited successfully.
-
-Given the feature toggle for Scheduled Transfers is disabled,
-When I attempt to schedule a transfer,
-Then I should see a message indicating the feature is not available.
-
-⚙️ Feature Toggle Details:
-Toggle Name: ENABLE_SCHEDULED_TRANSFER
-Enabled Behavior: Allows users to schedule money transfers.
-Disabled Behavior: Shows a message indicating the feature is unavailable.
-
-### 📚Title: Display Credit Card Information
-Title: Display Credit Card Information
-User Story: Display Credit Card Information
-
-As a bank customer,
-I want to view my credit card information, including card details, outstanding balance, and payment due date,
-So that I can manage my credit card usage and ensure timely payments.
-
-
-📝 Acceptance Criteria:
-Given I am logged into my bank account,
-When I navigate to the credit card section,
-Then I should see my credit card details, including:
-
-Card number (partially masked, e.g., **** **** **** 1234)
-Current outstanding balance
-Minimum payment due
-Payment due date
-Given I have multiple credit cards,
-When I view the credit card section,
-Then I should be able to switch between cards to view details for each.
-
-Given the feature toggle for Credit Card Info Display is disabled,
-When I access the credit card section,
-Then I should see a message indicating that the feature is not available.
-
-⚙️ Feature Toggle Details:
-Toggle Name: `ENABLE_CREDIT_CARD_INFO`
-Enabled Behavior: Displays credit card information.
-Disabled Behavior: Shows a message indicating the feature is not available.
