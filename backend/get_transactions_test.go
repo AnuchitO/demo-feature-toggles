@@ -48,6 +48,10 @@ func setupTestDBGetTransactions(dbName string) (*sql.DB, func(), error) {
 	// Return DB and cleanup function
 	return db, func() {
 		// Cleanup after tests
+		err := db.Close()
+		if err != nil {
+			fmt.Println("Error closing DB:", err)
+		}
 	}, nil
 }
 

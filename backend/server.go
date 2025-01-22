@@ -255,49 +255,72 @@ func (h *Handler) GetSchedules(c *gin.Context) {
 	c.JSON(http.StatusOK, schedules)
 }
 
+// Utility function to handle errors consistently
+func handleScheduleError(c *gin.Context, err error, msg string) {
+	if err != nil {
+		log.Printf("Error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
+	}
+}
+
+// Helper function to validate schedule dates
+func validateScheduleDates(startDate, endDate string) error {
+	format := "2006-01-02 15:04:05"
+	if _, err := time.Parse(format, startDate); err != nil {
+		return fmt.Errorf("invalid start date")
+	}
+
+	if endDate != "" {
+		if _, err := time.Parse(format, endDate); err != nil {
+			return fmt.Errorf("invalid end date")
+		}
+	}
+
+	return nil
+}
+
+// Helper function to get account name by account number
+func (h *Handler) getAccountName(accountNo string) (string, error) {
+	var accountName string
+	err := h.db.QueryRow(`
+        SELECT account_name
+        FROM accounts
+        WHERE account_number = $1`, accountNo).Scan(&accountName)
+	return accountName, err
+}
+
+// CreateSchedules handler
 func (h *Handler) CreateSchedules(c *gin.Context) {
 	var req ScheduleRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		log.Println(err)
+		handleScheduleError(c, err, "invalid request body")
+		return
+	}
+
+	// Validate schedule dates
+	if err := validateScheduleDates(req.StartDate, req.EndDate); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	format := "2006-01-02 15:04:05"
-	if _, err := time.Parse(format, req.StartDate); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid start date"})
-		return
-	}
-
-	if _, err := time.Parse(format, req.EndDate); req.EndDate != "" && err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid end date"})
-		return
-	}
-
-	var toAccountName string
-	err := h.db.QueryRow(`
-        SELECT account_name
-        FROM accounts
-        WHERE account_number = $1`,
-		req.ToAccount).Scan(&toAccountName)
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to create transfer"})
-		return
-	}
-
+	// Check if schedule type is enabled
 	if firebase.IsDisabled("enable_schedule_once") && req.Schedule == "once" {
-		msg := "one time schedule transfer is unavailable"
-		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "one time schedule transfer is unavailable"})
 		return
 	}
-
 	if firebase.IsDisabled("enable_schedule_monthly") && req.Schedule == "monthly" {
-		msg := "monthly schedule transfer is unavailable"
-		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "monthly schedule transfer is unavailable"})
 		return
 	}
 
+	// Get recipient account name
+	toAccountName, err := h.getAccountName(req.ToAccount)
+	if err != nil {
+		handleScheduleError(c, err, "unable to retrieve recipient account name")
+		return
+	}
+
+	// Create schedule entry in the database
 	schID := scheduleID()
 	status := "SCHEDULED"
 
@@ -306,10 +329,11 @@ func (h *Handler) CreateSchedules(c *gin.Context) {
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);`,
 		schID, req.FromAccount, req.ToAccount, toAccountName, req.ToBank, req.Amount, req.Currency, req.Note, status, req.Schedule, req.StartDate, req.EndDate)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to schedule transfer"})
+		handleScheduleError(c, err, "unable to schedule transfer")
 		return
 	}
 
+	// Send the response with schedule details
 	resp := ScheduleResponse{
 		ScheduleID:   schID,
 		Status:       status,
