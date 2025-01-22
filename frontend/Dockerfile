@@ -1,6 +1,6 @@
 FROM oven/bun:1.1.34-alpine AS base
 RUN apk update
-RUN apk add --no-cache python3 make g++ libstdc++
+RUN apk add --no-cache libstdc++
 
 
 WORKDIR /app
