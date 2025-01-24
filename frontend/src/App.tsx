@@ -29,7 +29,7 @@ const App = () => {
 
 
   const onClickTransfer = () => {
-    navigate('transfer')
+    navigate('/transfer')
   }
 
   const onClickTransaction = () => {
