@@ -407,7 +407,7 @@ export const Transfers = ({ account }: TransfersProps) => {
             <Accounts />
           </div>
         </div>
-        <div className="flex flex-col min-h-80 m-4">
+        <div className="flex flex-col min-h-80 m-4 rounded-2xl bg-gray-800">
           <div className="rounded-2xl shadow-lg">
             <div className="flex flex-col justify-center">
               <ToAccounts disabled={disabled} onSelect={onSelectToAccount} />
