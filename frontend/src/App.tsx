@@ -28,10 +28,6 @@ const App = () => {
   }, [loading])
 
 
-  const onClickTransfer = () => {
-    navigate('/transfer')
-  }
-
   const onClickTransaction = () => {
     setTab('transaction')
   }
@@ -46,9 +42,6 @@ const App = () => {
         <div className="flex flex-col justify-center" >
           <div>
             <Accounts />
-          </div>
-          <div className="flex justify-center mb-3" >
-            <TransferButton label="Transfer" onClick={onClickTransfer} />
           </div>
           <div className="flex flex-row items-center justify-center">
             {features.enableViewTransactionsHistory && <TransactionButton onClick={onClickTransaction} />}
