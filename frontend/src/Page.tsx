@@ -230,6 +230,7 @@ export const MockupCard: React.FC = () => {
 };
 
 
+// Style UI kit from : https://flowbite.com/docs/components/bottom-navigation/
 export const MainContent: React.FC = () => {
   return <>
     <main>
