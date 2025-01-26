@@ -7,4 +7,7 @@ export default defineConfig({
   plugins: [react(), EnvironmentPlugin('all')],
   // global variable process.env
   // https://vitejs.dev/guide/env-and-mode.html#env-variables
+  server: {
+    allowedHosts: true,
+  },
 })

@@ -5,6 +5,8 @@ import { FeatureTogglesProvider } from './FeatureTogglesContext'
 import { DEMO_ACCOUNT } from './services/accounts';
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { FloatingNavBar } from './FlotingNavBar';
+import { Fragment } from 'react/jsx-runtime';
 
 const user = {
   name: 'Tom Cook',
@@ -199,27 +201,79 @@ export const Menus = () => {
   </>
 }
 
+export const MockupCard: React.FC = () => {
+  return (
+    <div className="relative mx-auto border-gray-800 dark:border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[600px] w-[300px]">
+      {/* Vertical lines */}
+      <div className="h-[32px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[72px] rounded-s-lg"></div>
+      <div className="h-[46px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[124px] rounded-s-lg"></div>
+      <div className="h-[46px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[178px] rounded-s-lg"></div>
+      <div className="h-[64px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -end-[17px] top-[142px] rounded-e-lg"></div>
+
+      {/* Image Section */}
+      <div className="rounded-[2rem] overflow-hidden w-[272px] h-[572px] bg-white dark:bg-gray-800">
+        {/* Light Mode Image */}
+        <img
+          src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/hero/mockup-1-light.png"
+          className="dark:hidden w-[272px] h-[572px]"
+          alt="Light Mode Mockup"
+        />
+        {/* Dark Mode Image */}
+        <img
+          src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/hero/mockup-1-dark.png"
+          className="hidden dark:block w-[272px] h-[572px]"
+          alt="Dark Mode Mockup"
+        />
+      </div>
+    </div>
+  );
+};
+
+
+export const MainContent: React.FC = () => {
+  return <>
+    <main>
+      <div className="bg-gradient-radial min-w-[360px] from-[#A7C7E7] to-[#B3D9F7] mx-auto rounded-xl bg-white shadow-md max-w-2xl">
+        <div className="mx-auto h-[calc(100vh-28px)] overflow-y-auto">
+          <Menus />
+
+          <Routes>
+            <Route path="/" element={<App />} />
+            <Route path="/transfer" element={<Transfers account={DEMO_ACCOUNT} />} />
+          </Routes>
+
+          <FloatingNavBar />
+        </div>
+      </div >
+    </main>
+  </>
+}
+
+
 export function Page() {
   return (
     <>
-      <div className="min-h-full text-gray-400 min-w-[380px] mx-auto rounded-xl bg-white shadow-md max-w-2xl">
-
+      <Fragment>
         <FeatureTogglesProvider>
-
-          <Menus />
-          <main>
-            <div className="mx-auto px-4 py-6 md:px-6 lg:px-8">
-              <Router>
-                <Routes>
-                  <Route path="/" element={<App />} />
-                  <Route path="/transfer" element={<Transfers account={DEMO_ACCOUNT} />} />
-                </Routes>
-              </Router>
+          <Router>
+            <div className="hidden md:block relative mx-auto border-red-800 dark:border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] w-full">
+              <div className="w-[148px] h-[24px] bg-gray-800 top-0 rounded-b-[1rem] left-1/2 -translate-x-1/2 absolute"></div>
+              {/* Vertical lines */}
+              <div className="h-[32px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[72px] rounded-s-lg"></div>
+              <div className="h-[46px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[124px] rounded-s-lg"></div>
+              <div className="h-[46px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[178px] rounded-s-lg"></div>
+              <div className="h-[64px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -end-[17px] top-[142px] rounded-e-lg"></div>
+              <div className="rounded-[2rem] overflow-hidden h-[calc(100vh-28px)] bg-gray-800 dark:bg-gray-800">
+                <MainContent />
+              </div>
             </div>
-          </main>
 
+            <div className="flex md:hidden">
+              <MainContent />
+            </div>
+          </Router>
         </FeatureTogglesProvider>
-      </div>
+      </Fragment>
     </>
   )
 }

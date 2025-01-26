@@ -14,9 +14,8 @@
 }
 
 body {
-  background-color: #242424;
   color-scheme: light dark;
-  color: rgb(241, 245, 249);
+  color: rgb(107, 114, 128);
   display: flex;
   padding-top: 0;
   place-content: center;
