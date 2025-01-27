@@ -76,7 +76,7 @@ export const Schedules = ({ accountNumber = '111-111-111' }) => {
 
   return <>
     <div className="flex justify-center m-1">
-      <p className="font-black text-slate-100 text-xs">
+      <p className="font-black text-slate-500 text-xs">
         Scheduled Transactions
       </p>
     </div>
@@ -85,7 +85,7 @@ export const Schedules = ({ accountNumber = '111-111-111' }) => {
       {schedules.map((schedule, index) => {
         return <Fragment key={index}>
           <ScheduleItem key={index} toBank={schedule.toBank} toAccount={schedule.toAccount} toAccountName={schedule.toAccountName} amount={schedule.amount} date={schedule.date} />
-          {index < schedules.length - 1 && <hr className="border-t border-gray-500 m-4" />}
+          {index < schedules.length - 1 && <hr className="border-t border-gray-200 m-4" />}
         </Fragment>
       })}
     </div>
