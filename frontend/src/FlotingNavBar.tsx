@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import iconTransfer from './icon-transfer.svg'
-import iconTrans from './icon-transaction.svg'
-import iconSched from './icon-schedule-2.svg'
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export const SettingsButton: React.FC = () => {
@@ -55,12 +52,15 @@ export const WalletButton: React.FC = () => {
   </>
 }
 
+// icon: https://www.figma.com/design/omCDEWoX3y8MUC7tQD3mKm/Flowbite-Icons---580%2B-free-SVG-icons-in-Figma-(Community)?node-id=0-1&p=f&t=MH095UrLMWctGpkX-0
+
 export const FloatingNavBar: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
 
   const [hide, setHide] = useState(false)
 
+  const classIcon = "w-7 h-7 mb-1 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500"
   const handleTooltip = () => { }
   const handleTooltipLeave = () => { }
 
@@ -109,14 +109,11 @@ export const FloatingNavBar: React.FC = () => {
           onClick={handleHome}
         >
           <svg
-            className="w-6 h-6 mb-1 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z" />
+            className={classIcon}
+            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5" />
           </svg>
+
           <span className="sr-only">Home</span>
         </button>
 
@@ -128,7 +125,12 @@ export const FloatingNavBar: React.FC = () => {
           className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group"
           onClick={handleTransactionsHistory}
         >
-          <img src={iconTrans} alt="Transaction" className="w-8 h-8 mb-1 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500" />
+          <svg
+            className={classIcon}
+            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3 5h3m-6 0h.01M12 16h3m-6 0h.01M10 3v4h4V3h-4Z" />
+          </svg>
+
           <span className="sr-only">Transactions</span>
         </button>
 
@@ -140,7 +142,11 @@ export const FloatingNavBar: React.FC = () => {
             className="inline-flex items-center justify-center w-16 h-16 font-medium bg-blue-600 rounded-full hover:bg-blue-700 group focus:ring-4 focus:ring-blue-300 focus:outline-none dark:focus:ring-blue-800"
             onClick={handleTransfer}
           >
-            <img src={iconTransfer} alt="Transfer" className="w-8 h-8" />
+            <svg
+              className="w-8 h-8 text-gray-300 group-hover:text-white dark:group-hover:text-white"
+              xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16 10 3-3m0 0-3-3m3 3H5v3m3 4-3 3m0 0 3 3m-3-3h14v-3" />
+            </svg>
             <span className="sr-only">Transfer</span>
           </button>
         </div>
@@ -152,7 +158,12 @@ export const FloatingNavBar: React.FC = () => {
           className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group"
           onClick={handleScheduledTransactions}
         >
-          <img src={iconSched} alt="Scheduled" className="w-8 h-8 mb-1 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500" />
+          <svg
+            className={classIcon}
+            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m11.5 11.5 2.071 1.994M4 10h5m11 0h-1.5M12 7V4M7 7V4m10 3V4m-7 13H8v-2l5.227-5.292a1.46 1.46 0 0 1 2.065 2.065L10 17Zm-5 3h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1Z" />
+          </svg>
+
           <span className="sr-only">Scheduled</span>
         </button>
 
@@ -164,14 +175,11 @@ export const FloatingNavBar: React.FC = () => {
           onClick={handleProfile}
         >
           <svg
-            className="w-6 h-6 mb-1 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm0 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm0 13a8.949 8.949 0 0 1-4.951-1.488A3.987 3.987 0 0 1 9 13h2a3.987 3.987 0 0 1 3.951 3.512A8.949 8.949 0 0 1 10 18Z" />
+            className={classIcon}
+            xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0 0a8.949 8.949 0 0 0 4.951-1.488A3.987 3.987 0 0 0 13 16h-2a3.987 3.987 0 0 0-3.951 3.512A8.948 8.948 0 0 0 12 21Zm3-11a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
           </svg>
+
           <span className="sr-only">Profile</span>
         </button>
       </div>

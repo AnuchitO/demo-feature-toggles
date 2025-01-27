@@ -257,8 +257,8 @@ export function Page() {
       <Fragment>
         <FeatureTogglesProvider>
           <Router>
-            <div className="hidden md:block relative mx-auto border-red-800 dark:border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] w-full">
-              <div className="w-[148px] h-[24px] bg-gray-800 top-0 rounded-b-[1rem] left-1/2 -translate-x-1/2 absolute"></div>
+            <div className="hidden md:block relative mx-auto border-gray-800 dark:border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] w-full">
+              <div className="w-[148px] h-[24px] bg-gray-800 z-50 top-0 rounded-b-[1rem] left-1/2 -translate-x-1/2 absolute"></div>
               {/* Vertical lines */}
               <div className="h-[32px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[72px] rounded-s-lg"></div>
               <div className="h-[46px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[124px] rounded-s-lg"></div>
