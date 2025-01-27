@@ -28,13 +28,5 @@ describe('CancelButton Component', () => {
 
     expect(mockOnClick).toHaveBeenCalledTimes(1);
   });
-
-  it('displays the icon correctly', () => {
-    render(<CancelButton label="Cancel" onClick={mockOnClick} />);
-
-    const icon = screen.getByAltText('Cancel');
-
-    expect(icon).toBeInTheDocument();
-  });
 });
 

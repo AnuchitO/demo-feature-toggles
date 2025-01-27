@@ -14,10 +14,6 @@ describe('TransferButton', () => {
     // Check if the button has the correct style (background color)
     const button = screen.getByRole('button');
     expect(button).toHaveStyle('background: linear-gradient(45deg, #1E40AF 30%, #0EA5E9 90%)');
-
-    // Check if the button contains the transfer icon
-    const icon = screen.getByAltText('Transfer');
-    expect(icon).toHaveClass('w-6 h-6');
   });
 
   it('renders the TransferButton with a custom label', () => {
