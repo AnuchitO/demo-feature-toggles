@@ -98,44 +98,44 @@ export const FloatingNavBar: React.FC = () => {
 
   return (
     <div className="fixed z-50 w-80 h-16 max-w-sm -translate-x-1/2 bg-white border border-gray-200 rounded-full bottom-6 left-1/2 dark:bg-gray-700 dark:border-gray-400">
-      <div className="grid h-full  max-w-sm grid-cols-5 mx-auto">
-        {/* Home Button */}
-        <button
-          data-tooltip-target="tooltip-home"
-          type="button"
-          className="inline-flex flex-col items-center justify-center px-5 rounded-s-full hover:text-gray-50 dark:hover:text-gray-800 group"
-          onClick={handleHome}
-        >
-          <svg
-            className={classIcon}
-            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5" />
-          </svg>
-
-          <span className="sr-only">Home</span>
-        </button>
-
-
-        {/* Transactions history */}
-        <button
-          data-tooltip-target="tooltip-wallet"
-          type="button"
-          className="inline-flex flex-col items-center justify-center px-5 rounded-s-full hover:text-gray-50 dark:hover:text-gray-800 group"
-          onClick={handleTransactionsHistory}
-        >
-          <svg
-            className={classIcon}
-            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3 5h3m-6 0h.01M12 16h3m-6 0h.01M10 3v4h4V3h-4Z" />
-          </svg>
-
-          <span className="sr-only">Transactions</span>
-        </button>
-
-        {/* New Item Button */}
-        <div className="flex items-center justify-center">
+      <div className="grid grid-cols-3 h-full max-w-sm mx-auto">
+        <div className="min-w-full flex flex-row justify-around">
+          {/* Home Button */}
           <button
-            data-tooltip-target="tooltip-new"
+            data-tooltip-target="tooltip-home"
+            type="button"
+            className="inline-flex flex-col items-center justify-center rounded-s-full hover:text-gray-50 dark:hover:text-gray-800 group"
+            onClick={handleHome}
+          >
+            <svg
+              className={classIcon}
+              xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5" />
+            </svg>
+
+            <span className="sr-only">Home</span>
+          </button>
+
+          {/* Transactions history */}
+          <button
+            data-tooltip-target="tooltip-wallet"
+            type="button"
+            className="inline-flex flex-col items-center justify-center rounded-s-full hover:text-gray-50 dark:hover:text-gray-800 group"
+            onClick={handleTransactionsHistory}
+          >
+            <svg
+              className={classIcon}
+              xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3 5h3m-6 0h.01M12 16h3m-6 0h.01M10 3v4h4V3h-4Z" />
+            </svg>
+
+            <span className="sr-only">Transactions</span>
+          </button>
+        </div>
+
+        <div className="flex justify-center">
+          {/* Transfer Button */}
+          <button
             type="button"
             className="inline-flex items-center justify-center w-16 h-16 font-medium bg-blue-600 rounded-full hover:bg-blue-700 group focus:ring-4 focus:ring-blue-300 focus:outline-none dark:focus:ring-blue-800"
             onClick={handleTransfer}
@@ -149,37 +149,39 @@ export const FloatingNavBar: React.FC = () => {
           </button>
         </div>
 
-        {/* Settings Button */}
-        <button
-          data-tooltip-target="tooltip-settings"
-          type="button"
-          className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group"
-          onClick={handleScheduledTransactions}
-        >
-          <svg
-            className={classIcon}
-            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m11.5 11.5 2.071 1.994M4 10h5m11 0h-1.5M12 7V4M7 7V4m10 3V4m-7 13H8v-2l5.227-5.292a1.46 1.46 0 0 1 2.065 2.065L10 17Zm-5 3h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1Z" />
-          </svg>
+        <div className="min-w-full flex flex-row justify-around">
+          {/* Settings Button */}
+          <button
+            data-tooltip-target="tooltip-settings"
+            type="button"
+            className="inline-flex flex-col items-center justify-center rounded-s-full hover:text-gray-50 dark:hover:text-gray-800 group"
+            onClick={handleScheduledTransactions}
+          >
+            <svg
+              className={classIcon}
+              xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m11.5 11.5 2.071 1.994M4 10h5m11 0h-1.5M12 7V4M7 7V4m10 3V4m-7 13H8v-2l5.227-5.292a1.46 1.46 0 0 1 2.065 2.065L10 17Zm-5 3h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1Z" />
+            </svg>
 
-          <span className="sr-only">Scheduled</span>
-        </button>
+            <span className="sr-only">Scheduled</span>
+          </button>
 
-        {/* Profile Button */}
-        <button
-          data-tooltip-target="tooltip-profile"
-          type="button"
-          className="inline-flex flex-col items-center justify-center px-5 rounded-e-full hover:bg-gray-50 dark:hover:bg-gray-800 group"
-          onClick={handleProfile}
-        >
-          <svg
-            className={classIcon}
-            xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0 0a8.949 8.949 0 0 0 4.951-1.488A3.987 3.987 0 0 0 13 16h-2a3.987 3.987 0 0 0-3.951 3.512A8.948 8.948 0 0 0 12 21Zm3-11a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-          </svg>
+          {/* Profile Button */}
+          <button
+            data-tooltip-target="tooltip-profile"
+            type="button"
+            className="inline-flex flex-col items-center justify-center rounded-s-full hover:text-gray-50 dark:hover:text-gray-800 group"
+            onClick={handleProfile}
+          >
+            <svg
+              className={classIcon}
+              xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0 0a8.949 8.949 0 0 0 4.951-1.488A3.987 3.987 0 0 0 13 16h-2a3.987 3.987 0 0 0-3.951 3.512A8.948 8.948 0 0 0 12 21Zm3-11a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
 
-          <span className="sr-only">Profile</span>
-        </button>
+            <span className="sr-only">Profile</span>
+          </button>
+        </div>
       </div>
     </div>
   );
