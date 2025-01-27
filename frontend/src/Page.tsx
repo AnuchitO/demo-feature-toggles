@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import App from './App';
 import Transfers from './Transfers'
 import { Transactions } from './Transactions'
 import { Schedules } from './Schedules'
@@ -239,13 +238,12 @@ export const MainContent: React.FC = () => {
     <main>
       <div className="bg-gradient-radial min-w-[360px] from-[#A7C7E7] to-[#B3D9F7] mx-auto rounded-xl bg-white shadow-md max-w-2xl">
         <div className="mx-auto h-[calc(100vh-28px)] overflow-y-auto">
-          <Menus />
 
-          <div className="flex flex-col justify-center" >
+          <div className="flex flex-col justify-center mt-4" >
             <Accounts />
           </div>
           <Routes>
-            <Route path="/" element={<App />} />
+            <Route path="/" element={<Transactions />} />
             <Route path="/transactions" element={<Transactions />} />
             <Route path="/scheduled" element={<Schedules />} />
             <Route path="/transfer" element={<Transfers account={DEMO_ACCOUNT} />} />
@@ -272,13 +270,15 @@ export function Page() {
               <div className="h-[46px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[124px] rounded-s-lg"></div>
               <div className="h-[46px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[178px] rounded-s-lg"></div>
               <div className="h-[64px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -end-[17px] top-[142px] rounded-e-lg"></div>
-              <div className="rounded-[2rem] overflow-hidden h-[calc(100vh-28px)] bg-gray-800 dark:bg-gray-800">
+              <div className="rounded-[2rem] overflow-hidden min-w-[420px] h-[calc(100vh-28px)] bg-gray-800 dark:bg-gray-800">
                 <MainContent />
               </div>
             </div>
 
-            <div className="flex md:hidden">
-              <MainContent />
+            <div className="relative mx-auto rounded-[2.5rem] w-full">
+              <div className="flex md:hidden">
+                <MainContent />
+              </div>
             </div>
           </Router>
         </FeatureTogglesProvider>
