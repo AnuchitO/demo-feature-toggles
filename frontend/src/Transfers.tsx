@@ -7,7 +7,6 @@ import { Input, Field, Label, Select, Switch, Button, Tab, TabGroup, TabList, Ta
 import { TransferButton } from './TransferButton'
 import { CancelButton } from './CancelButton'
 import { Dialog } from './Modal'
-import { Accounts } from './Accounts'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 
 import { Days, MonthDatePicker, SingleDatePicker } from './DatePicker'
@@ -402,11 +401,6 @@ export const Transfers = ({ account }: TransfersProps) => {
   return (
     <div>
       <div className="rounded-2xl shadow-lg">
-        <div className="flex flex-col justify-center">
-          <div>
-            <Accounts />
-          </div>
-        </div>
         <div className="flex flex-col min-h-80 m-4 rounded-2xl bg-gray-800">
           <div className="rounded-2xl shadow-lg">
             <div className="flex flex-col justify-center">

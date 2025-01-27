@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import "./App.css"
-import { TransferButton } from './TransferButton'
 import { TransactionButton } from './TransactionButton'
 import { ScheduleButton } from './ScheduleButton'
-import { Accounts } from './Accounts'
 import { Transactions } from './Transactions'
 import { Schedules } from './Schedules'
 import { useFeatureToggles } from './FeatureTogglesContext'
@@ -13,7 +10,6 @@ const App = () => {
 
   const { features, loading } = useFeatureToggles()
   const [tab, setTab] = useState('transaction')
-  const navigate = useNavigate()
 
   useEffect(() => {
     if (loading) {
@@ -40,9 +36,6 @@ const App = () => {
     <div>
       <div className="rounded-2xl shadow-lg">
         <div className="flex flex-col justify-center" >
-          <div>
-            <Accounts />
-          </div>
           <div className="flex flex-row items-center justify-center">
             {features.enableViewTransactionsHistory && <TransactionButton onClick={onClickTransaction} />}
             {features.enableViewScheduledTransactions && <ScheduleButton onClick={onClickSchedule} />}

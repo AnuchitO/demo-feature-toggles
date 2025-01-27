@@ -65,17 +65,15 @@ export const FloatingNavBar: React.FC = () => {
   const handleTooltipLeave = () => { }
 
   const handleHome = () => {
-    navigate('/');
+    navigate('/transactions');
   }
 
   const handleTransactionsHistory = () => {
-    // navigate('/transactions');
-    alert('Transactions History')
+    navigate('/transactions');
   }
 
   const handleScheduledTransactions = () => {
-    // navigate('/scheduled');
-    alert('Scheduled Transactions')
+    navigate('/scheduled');
   }
 
   const handleTransfer = () => {

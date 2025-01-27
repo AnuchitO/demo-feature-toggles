@@ -1,6 +1,9 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import App from './App';
 import Transfers from './Transfers'
+import { Transactions } from './Transactions'
+import { Schedules } from './Schedules'
+import { Accounts } from './Accounts'
 import { FeatureTogglesProvider } from './FeatureTogglesContext'
 import { DEMO_ACCOUNT } from './services/accounts';
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
@@ -238,8 +241,13 @@ export const MainContent: React.FC = () => {
         <div className="mx-auto h-[calc(100vh-28px)] overflow-y-auto">
           <Menus />
 
+          <div className="flex flex-col justify-center" >
+            <Accounts />
+          </div>
           <Routes>
             <Route path="/" element={<App />} />
+            <Route path="/transactions" element={<Transactions />} />
+            <Route path="/scheduled" element={<Schedules />} />
             <Route path="/transfer" element={<Transfers account={DEMO_ACCOUNT} />} />
           </Routes>
 
