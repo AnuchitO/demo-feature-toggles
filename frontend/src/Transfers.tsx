@@ -418,14 +418,14 @@ export const Transfers = ({ account }: TransfersProps) => {
                 onSetEndDate={(date) => setEndDate(date)}
               />}
             </div>
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+            {error && <p className="text-red-400 flex justify-center text-sm">{error}</p>}
             <div className="flex flex-row justify-center mt-2 mb-2">
               <div className="flex one-space">
                 <CancelButton disabled={disabled} label="Cancel" onClick={goBackHome} />
               </div>
               <div className="flex third-space">
-                {!isSchedule && <TransferButton loading={loading} disabled={disabled} label="Confirm Transfer" onClick={handleSubmitTransfer} />}
-                {isSchedule && <TransferButton loading={loading} disabled={disabled} label="Confirm Schedule" onClick={handleScheduleTransfer} />}
+                {!isSchedule && <TransferButton loading={loading} disabled={disabled} label="Transfer" onClick={handleSubmitTransfer} />}
+                {isSchedule && <TransferButton loading={loading} disabled={disabled} label="Schedule" onClick={handleScheduleTransfer} />}
               </div>
             </div>
           </div>

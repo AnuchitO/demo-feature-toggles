@@ -1,48 +1,26 @@
-import icon from './icon-cancel.svg'
-import iconDisable from './icon-cancel-disable.svg'
-import { makeStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-
-const useStyles = makeStyles({
-  root: {
-    background: 'linear-gradient(45deg, #2F2F2F 30%, #64748b 90%)',
-    border: 0,
-    borderRadius: 100,
-    marginLeft: 8,
-    marginRight: 8,
-    paddingLeft: 32,
-    paddingRight: 32,
-    boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
-    color: 'white',
-    height: 36,
-    padding: '0 30px',
-    textTransform: 'none',
-  },
-});
-
 interface Props {
-  label: string;
   onClick: () => void;
+  label?: string;
   disabled?: boolean;
 }
 
-
 export const CancelButton = ({ onClick, label = "Cancel", disabled = false }: Props) => {
-  const classes = useStyles();
-
-  if (disabled) {
-    return <>
-      <Button className={classes.root} disabled
-        startIcon={<img src={iconDisable} alt={label} className="w-6 h-6" />}
-      > {label}</Button>
-    </>
-  }
-
   return <>
-    <Button className={classes.root}
-      startIcon={<img src={icon} alt={label} className="w-6 h-6" />}
+
+    <button type="button"
       onClick={onClick}
-    > {label}</Button>
+      disabled={disabled}
+      className="py-2.5 px-5 me-2 mb-2 inline-flex items-center justify-center font-medium text-gray focus:outline-none rounded-full border border-gray-100 hover:bg-gray-200 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+      <Icon />
+      {label}
+    </button>
   </>
 }
 
+export const Icon = () => (<>
+  <svg
+    className="w-7 h-7 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500"
+    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <path fill="currentColor" fill-rule="evenodd" d="M18.645 5.291a1 1 0 0 1 .004 1.414L13.41 11.97l5.298 5.325a1 1 0 0 1-1.418 1.41L12 13.388l-5.291 5.317a1 1 0 0 1-1.418-1.41l5.298-5.325-5.238-5.265a1 1 0 0 1 1.418-1.41L12 10.552l5.231-5.257a1 1 0 0 1 1.414-.004Z" clip-rule="evenodd" />
+  </svg>
+</>)
