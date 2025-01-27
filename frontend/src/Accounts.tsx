@@ -31,12 +31,12 @@ export const Balance: React.FC<BalanceProps> = ({ account = defaultAccount }) =>
           </div>
         </div>
         <div className="flex flex-col text-left mt-6 ml-4">
-          <p className="font-thin text-gray text-xs font-os">Current Balance</p>
-          <h1 className="text-white-400 text-xl font-bold font-os">{formatCurrency(account.currentBalance / 100)}</h1>
+          <p className="font-thin text-slate-300 text-xs font-os">Current Balance</p>
+          <h1 className="text-xl font-bold text-slate-300 font-os">{formatCurrency(account.currentBalance / 100)}</h1>
         </div>
         <div className="flex justify-between p-4 text-gray-400 font-quick">
-          <p className="font-thin text-gray text-xs font-os">Available Balance</p>
-          <p className="font-thin text-gray text-xs font-os">{formatCurrency(account.availableBalance / 100)}</p>
+          <p className="font-thin text-slate-300 text-xs font-os">Available Balance</p>
+          <p className="font-thin text-slate-300 text-xs font-os">{formatCurrency(account.availableBalance / 100)}</p>
         </div>
       </div>
     </div>

@@ -103,7 +103,7 @@ export const FloatingNavBar: React.FC = () => {
         <button
           data-tooltip-target="tooltip-home"
           type="button"
-          className="inline-flex flex-col items-center justify-center px-5 rounded-s-full hover:bg-gray-50 dark:hover:bg-gray-800 group"
+          className="inline-flex flex-col items-center justify-center px-5 rounded-s-full hover:text-gray-50 dark:hover:text-gray-800 group"
           onClick={handleHome}
         >
           <svg
@@ -120,7 +120,7 @@ export const FloatingNavBar: React.FC = () => {
         <button
           data-tooltip-target="tooltip-wallet"
           type="button"
-          className="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group"
+          className="inline-flex flex-col items-center justify-center px-5 rounded-s-full hover:text-gray-50 dark:hover:text-gray-800 group"
           onClick={handleTransactionsHistory}
         >
           <svg
