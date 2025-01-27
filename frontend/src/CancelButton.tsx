@@ -9,7 +9,7 @@ export const CancelButton = ({ onClick, label = "Cancel", disabled = false }: Pr
     <button type="button"
       onClick={onClick}
       disabled={disabled}
-      className="py-2.5 px-5 me-2 mb-2 inline-flex items-center justify-center font-medium text-gray focus:outline-none rounded-full border border-gray-100 hover:bg-gray-200 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+      className="py-2.5 px-5 me-2 mb-2 inline-flex items-center justify-center font-medium text-gray focus:outline-none rounded-full border border-gray-100 hover:bg-gray-200 hover:text-black-300 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
       <Icon />
       {label}
     </button>

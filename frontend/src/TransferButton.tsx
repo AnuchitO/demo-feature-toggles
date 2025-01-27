@@ -13,7 +13,7 @@ export const TransferButton = ({ onClick, disabled = false, loading = false, lab
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="text-white w-full min-w-52 bg-blue-700 inline-flex items-center justify-center hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+      className="text-white w-full min-w-52 bg-blue-700 inline-flex items-center justify-center hover:text-lg hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
       {loading ? <LoadingIcon /> : <Icon />}
       {label}
     </button>
