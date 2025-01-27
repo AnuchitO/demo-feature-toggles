@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useFeatureToggles } from './FeatureTogglesContext';
 
 export const SettingsButton: React.FC = () => {
   return <>
@@ -55,6 +56,7 @@ export const WalletButton: React.FC = () => {
 export const FloatingNavBar: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
+  const { features, loading } = useFeatureToggles()
 
   const [hide, setHide] = useState(false)
 
@@ -92,13 +94,13 @@ export const FloatingNavBar: React.FC = () => {
     }
   }, [location])
 
-  if (hide) {
+  if (hide || loading) {
     return <></>
   }
 
   return (
     <div className="fixed z-50 w-80 h-16 max-w-sm -translate-x-1/2 bg-white border border-gray-200 rounded-full bottom-6 left-1/2 dark:bg-gray-700 dark:border-gray-400">
-      <div className="grid grid-cols-3 h-full max-w-sm mx-auto">
+      <div className="grid grid-cols-3 items-center justify-center h-full max-w-sm mx-auto">
         <div className="min-w-full flex flex-row justify-around">
           {/* Home Button */}
           <button
@@ -117,24 +119,27 @@ export const FloatingNavBar: React.FC = () => {
           </button>
 
           {/* Transactions history */}
-          <button
-            data-tooltip-target="tooltip-wallet"
-            type="button"
-            className="inline-flex flex-col items-center justify-center rounded-s-full hover:text-gray-50 dark:hover:text-gray-800 group"
-            onClick={handleTransactionsHistory}
-          >
-            <svg
-              className={classIcon}
-              xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3 5h3m-6 0h.01M12 16h3m-6 0h.01M10 3v4h4V3h-4Z" />
-            </svg>
+          {features.enableViewTransactionsHistory &&
+            <button
+              data-tooltip-target="tooltip-wallet"
+              type="button"
+              className="inline-flex flex-col items-center justify-center rounded-s-full hover:text-gray-50 dark:hover:text-gray-800 group"
+              onClick={handleTransactionsHistory}
+            >
+              <svg
+                className={classIcon}
+                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3 5h3m-6 0h.01M12 16h3m-6 0h.01M10 3v4h4V3h-4Z" />
+              </svg>
 
-            <span className="sr-only">Transactions</span>
-          </button>
+              <span className="sr-only">Transactions</span>
+            </button>
+          }
         </div>
 
         <div className="flex justify-center">
           {/* Transfer Button */}
+
           <button
             type="button"
             className="inline-flex items-center justify-center w-16 h-16 font-medium bg-blue-600 rounded-full hover:bg-blue-700 group focus:ring-4 focus:ring-blue-300 focus:outline-none dark:focus:ring-blue-800"
@@ -150,22 +155,23 @@ export const FloatingNavBar: React.FC = () => {
         </div>
 
         <div className="min-w-full flex flex-row justify-around">
-          {/* Settings Button */}
-          <button
-            data-tooltip-target="tooltip-settings"
-            type="button"
-            className="inline-flex flex-col items-center justify-center rounded-s-full hover:text-gray-50 dark:hover:text-gray-800 group"
-            onClick={handleScheduledTransactions}
-          >
-            <svg
-              className={classIcon}
-              xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m11.5 11.5 2.071 1.994M4 10h5m11 0h-1.5M12 7V4M7 7V4m10 3V4m-7 13H8v-2l5.227-5.292a1.46 1.46 0 0 1 2.065 2.065L10 17Zm-5 3h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1Z" />
-            </svg>
+          {/* Scheduled Button */}
+          {features.enableViewScheduledTransactions &&
+            <button
+              data-tooltip-target="tooltip-settings"
+              type="button"
+              className="inline-flex flex-col items-center justify-center rounded-s-full hover:text-gray-50 dark:hover:text-gray-800 group"
+              onClick={handleScheduledTransactions}
+            >
+              <svg
+                className={classIcon}
+                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m11.5 11.5 2.071 1.994M4 10h5m11 0h-1.5M12 7V4M7 7V4m10 3V4m-7 13H8v-2l5.227-5.292a1.46 1.46 0 0 1 2.065 2.065L10 17Zm-5 3h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1Z" />
+              </svg>
 
-            <span className="sr-only">Scheduled</span>
-          </button>
-
+              <span className="sr-only">Scheduled</span>
+            </button>
+          }
           {/* Profile Button */}
           <button
             data-tooltip-target="tooltip-profile"
