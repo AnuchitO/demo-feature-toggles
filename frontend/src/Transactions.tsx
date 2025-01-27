@@ -56,7 +56,7 @@ export const Transactions = ({ accountNumber = '111-111-111' }) => {
   }
 
   return <>
-    <div className="flex justify-between m-1">
+    <div className="flex justify-between min-w-full">
       <p className="font-black text-slate-500 text-xs">
         Transactions
       </p>

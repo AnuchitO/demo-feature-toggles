@@ -250,22 +250,37 @@ export const MockupCard: React.FC = () => {
 
 
 
-// I want to create the layout <Layout><Transactions /></Layout> like that
 interface LayoutProps {
   children: React.ReactNode
 }
 export const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="">
-      <div className="flex flex-col justify-center mt-4" >
+      <div className="flex flex-col min-w-screen justify-center mt-4" >
         <Accounts />
       </div>
-      <div className="mx-auto px-4 md:px-6 lg:px-8">
+      <div className="mx-auto md:px-6 lg:px-8">
         {children}
       </div>
     </div>
   );
 }
+
+export function NotFound() {
+  return (
+    <div className="flex flex-col min-h-[calc(100vh-120px)] items-center justify-center p-4">
+      <img src={welcome} alt="welcome" className="w-40 h-40 mb-10" />
+      <h1 className="mb-2 mt-10 font-extrabold dark:text-base md:text-2xl dark:text-white">
+        The page you are looking for is not found
+      </h1>
+
+      <p className="mb-10 text-base text-center dark:text-gray-50 max-w-md">
+        Please go back to the home page
+      </p>
+    </div>
+  )
+}
+
 
 export function Welcome() {
   return (
@@ -287,21 +302,6 @@ export function Welcome() {
 // Style UI kit from : https://flowbite.com/docs/components/bottom-navigation/
 export const MainContent: React.FC = () => {
   const { features, loading } = useFeatureToggles()
-  const [routes, setRoutes] = useState([
-    { name: 'Home', path: '/', show: true },
-    { name: 'Transfer', path: '/transfer', show: true },
-    { name: 'Transactions', path: '/transactions', show: false },
-    { name: 'Scheduled', path: '/scheduled', show: false },
-  ])
-
-  useEffect(() => {
-    setRoutes([
-      ...routes,
-      { name: 'Transactions', path: '/transactions', show: features.enableViewTransactionsHistory },
-      { name: 'Scheduled', path: '/scheduled', show: features.enableViewScheduledTransactions },
-    ])
-  }, [loading])
-
   if (loading) {
     return <div>Loading...</div>
   }
@@ -309,16 +309,13 @@ export const MainContent: React.FC = () => {
   return <>
     <main>
       <div className="bg-gradient-radial min-w-[360px] from-[#A7C7E7] to-[#B3D9F7] mx-auto rounded-xl bg-white shadow-md max-w-2xl">
-        <div className="mx-auto w-full h-[calc(100vh-0px)] pb-24 overflow-y-auto bg-gray-100 dark:bg-gray-900">
-
-          {/* <div className="flex flex-col justify-center mt-4" >
-            <Accounts />
-          </div> */}
+        <div className="mx-auto w-full h-[calc(100vh-0px)] pb-24 overflow-y-auto bg-gray-50 dark:bg-gray-900">
           <Routes>
-            <Route path="/" element={<Layout children={<Welcome />} />} />
-            {features.enableViewTransactionsHistory && <Route path="/transactions" element={<Transactions />} />}
-            {features.enableViewScheduledTransactions && <Route path="/scheduled" element={<Schedules />} />}
-            <Route path="/transfer" element={<Transfers account={DEMO_ACCOUNT} />} />
+            <Route path="/" element={<Layout><Welcome /></Layout>} />
+            {features.enableViewTransactionsHistory && <Route path="/transactions" element={<Layout><Transactions /></Layout>} />}
+            {features.enableViewScheduledTransactions && <Route path="/scheduled" element={<Layout><Schedules /></Layout>} />}
+            <Route path="/transfer" element={<Layout><Transfers account={DEMO_ACCOUNT} /></Layout>} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
 
           <FloatingNavBar />

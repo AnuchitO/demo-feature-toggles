@@ -26,12 +26,12 @@ export const Text = ({ label, onChange, disabled = false }: TextProps) => {
   return <>
     <div className="w-full max-w-md px-4 mt-2 mb-2 justify-start">
       <Field>
-        <Label className="text-sm/6 font-medium text-white flex">{label}</Label>
+        <Label className="text-sm/6 font-medium flex">{label}</Label>
         <Input
           disabled={disabled}
           className={clsx(
-            `${disabled ? 'bg-neutral-900' : 'bg-white/5'}`,
-            'mt-3 block w-full rounded-lg border-none py-1.5 px-3 text-sm/6 text-white',
+            `${disabled ? 'bg-neutral-900' : 'bg-white/5 dark:bg-gray-800'}`,
+            'mt-3 block w-full rounded-lg  border border-gray-300 dark:border-none py-1.5 px-3 text-sm/6',
             'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
           )}
           onChange={onChange}
@@ -65,13 +65,13 @@ export const Number = ({ label, onChange, disabled = false }: NumberProps) => {
   return (
     <div className="w-full max-w-md px-4 mt-2 mb-2 justify-start">
       <Field>
-        <Label className="text-sm/6 font-medium text-white flex">{label}</Label>
+        <Label className="text-sm/6 font-medium flex">{label}</Label>
         <NumericFormat
           disabled={disabled}
           data-testId="amount"
           className={clsx(
-            `${disabled ? 'bg-neutral-900' : 'bg-white/5'}`,
-            'mt-3 block w-full text-right rounded-lg border-none py-1.5 px-3 text-sm/6 text-white',
+            `${disabled ? 'bg-neutral-900' : 'bg-white/5 dark:bg-gray-800'}`,
+            'mt-3 block w-full text-right rounded-lg border border-gray-300 dark:border-none py-1.5 px-3 text-sm/6',
             'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
           )}
           onChange={handleChange}
@@ -104,15 +104,15 @@ export function SetSchedule({ onChange, disabled = false }: SetScheduleProps) {
       <div className="w-full max-w-md px-4 mt-2 mb-2">
         <Field>
           <div className="flex justify-between">
-            <Label className="text-sm/6 font-medium text-white flex">Schedule</Label>
+            <Label className="text-sm/6 font-medium flex">Schedule</Label>
             <Switch
               disabled={disabled}
               checked={active}
               onChange={handleToggle}
               data-testid="schedule-switch"
               className={clsx(
-                `${disabled ? 'bg-neutral-900' : 'bg-white/5'}`,
-                "group relative flex h-7 w-14 cursor-pointer rounded-full p-1 transition-colors duration-200 ease-in-out focus:outline-none data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-green-500",
+                `${disabled ? 'bg-neutral-900' : 'bg-white/5 dark:bg-gray-800'}`,
+                "group relative flex h-7 w-14 cursor-pointer bg-gray-400 dark:border-none rounded-full p-1 transition-colors duration-200 ease-in-out focus:outline-none data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-green-500",
               )}
             >
               <span
@@ -144,7 +144,7 @@ function ScheduleTab({ onSetActiveTab, onSetScheduleDate, onSetDay, onSetStartDa
         <TabList className="flex gap-4 justify-around">
           {
             features.enableScheduleOnce &&
-            <Tab className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
+            <Tab className="rounded-full py-1 px-3 text-sm/6 font-semibold focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
               onClick={() => onSetActiveTab('ONCE')}
             >
               Once
@@ -152,7 +152,7 @@ function ScheduleTab({ onSetActiveTab, onSetScheduleDate, onSetDay, onSetStartDa
           }
           {
             features.enableScheduleMonthly &&
-            <Tab className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
+            <Tab className="rounded-full py-1 px-3 text-sm/6 font-semibold focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
               onClick={() => onSetActiveTab('MONTHLY')}
             >
               Monthly
@@ -216,13 +216,13 @@ export function ToAccounts({ onSelect, disabled = false }: ToAccountsProps) {
   return (
     <div className="w-full max-w-md px-4 justify-start">
       <Field>
-        <Label className="text-sm/6 font-medium text-white flex">To Bank Account</Label>
+        <Label className="text-sm/6 font-medium flex">To Bank Account</Label>
         <div className="relative">
           <Select
             disabled={disabled}
             className={clsx(
-              `${disabled ? 'bg-neutral-900' : 'bg-white/5'}`,
-              'mt-3 block w-full appearance-none rounded-lg border-none py-1.5 px-3 text-sm/6 text-white',
+              `${disabled ? 'bg-neutral-900' : 'bg-white dark:bg-gray-800'}`,
+              'mt-3 block w-full appearance-none rounded-lg border border-gray-300 dark:border-none py-1.5 px-3 text-sm/6',
               'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25',
               '*:text-black'
             )}
@@ -400,33 +400,31 @@ export const Transfers = ({ account }: TransfersProps) => {
 
   return (
     <div>
-      <div className="rounded-2xl shadow-lg">
-        <div className="flex flex-col min-h-80 m-4 rounded-2xl bg-gray-800">
-          <div className="rounded-2xl shadow-lg">
-            <div className="flex flex-col justify-center">
-              <ToAccounts disabled={disabled} onSelect={onSelectToAccount} />
-              <Number disabled={disabled} label="Amount" onChange={(amount) => { setAmount(amount) }} />
-              <Text disabled={disabled} label="Note" onChange={(e) => setNote(e.target.value)} />
-              {
-                (features.enableScheduleOnce || features.enableScheduleMonthly) &&
-                <SetSchedule disabled={disabled} onChange={handleScheduleToggle} />
-              }
-              {isSchedule && <ScheduleTab onSetActiveTab={(tab) => setActiveTab(tab)}
-                onSetScheduleDate={(date) => setScheduleDate(date)}
-                onSetDay={(day) => setDay(day)}
-                onSetStartDate={(date) => setStartDate(date)}
-                onSetEndDate={(date) => setEndDate(date)}
-              />}
+      <div className="flex flex-col min-h-80 m-4 rounded-2xl text-gray-800 dark:text-white">
+        <div className="rounded-2xl shadow-lg">
+          <div className="flex flex-col justify-center">
+            <ToAccounts disabled={disabled} onSelect={onSelectToAccount} />
+            <Number disabled={disabled} label="Amount" onChange={(amount) => { setAmount(amount) }} />
+            <Text disabled={disabled} label="Note" onChange={(e) => setNote(e.target.value)} />
+            {
+              (features.enableScheduleOnce || features.enableScheduleMonthly) &&
+              <SetSchedule disabled={disabled} onChange={handleScheduleToggle} />
+            }
+            {isSchedule && <ScheduleTab onSetActiveTab={(tab) => setActiveTab(tab)}
+              onSetScheduleDate={(date) => setScheduleDate(date)}
+              onSetDay={(day) => setDay(day)}
+              onSetStartDate={(date) => setStartDate(date)}
+              onSetEndDate={(date) => setEndDate(date)}
+            />}
+          </div>
+          {error && <p className="text-red-400 flex justify-center text-sm">{error}</p>}
+          <div className="flex flex-row justify-center mt-2 mb-2">
+            <div className="flex one-space">
+              <CancelButton disabled={disabled} label="Cancel" onClick={goBackHome} />
             </div>
-            {error && <p className="text-red-400 flex justify-center text-sm">{error}</p>}
-            <div className="flex flex-row justify-center mt-2 mb-2">
-              <div className="flex one-space">
-                <CancelButton disabled={disabled} label="Cancel" onClick={goBackHome} />
-              </div>
-              <div className="flex third-space">
-                {!isSchedule && <TransferButton loading={loading} disabled={disabled} label="Transfer" onClick={handleSubmitTransfer} />}
-                {isSchedule && <TransferButton loading={loading} disabled={disabled} label="Schedule" onClick={handleScheduleTransfer} />}
-              </div>
+            <div className="flex third-space">
+              {!isSchedule && <TransferButton loading={loading} disabled={disabled} label="Transfer" onClick={handleSubmitTransfer} />}
+              {isSchedule && <TransferButton loading={loading} disabled={disabled} label="Schedule" onClick={handleScheduleTransfer} />}
             </div>
           </div>
         </div>

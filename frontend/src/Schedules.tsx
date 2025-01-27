@@ -75,12 +75,12 @@ export const Schedules = ({ accountNumber = '111-111-111' }) => {
 
 
   return <>
-    <div className="flex justify-center m-1">
+    <div className="flex justify-center">
       <p className="font-black text-slate-500 text-xs">
         Scheduled Transactions
       </p>
     </div>
-    <div className="w-full h-full min-w-100 min-h-40 rounded-lg shadow-lg" >
+    <div className="h-full min-w-full min-h-40 rounded-lg shadow-lg" >
       {schedules.length === 0 && <div className="text-center p-4 font-os">No scheduled transactions</div>}
       {schedules.map((schedule, index) => {
         return <Fragment key={index}>
@@ -89,9 +89,11 @@ export const Schedules = ({ accountNumber = '111-111-111' }) => {
         </Fragment>
       })}
     </div>
-    <p className="font-black text-gray-500 mt-2 mb-2 text-sm">
-      End of scheduled transactions
-    </p>
+    <div className="flex justify-center">
+      <p className="font-black justify-center items-center text-gray-500 mt-2 mb-2 text-sm">
+        End of scheduled transactions
+      </p>
+    </div>
   </>
 }
 

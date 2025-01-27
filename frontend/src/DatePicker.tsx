@@ -27,7 +27,6 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: '8px',
-          color: 'white',
         },
       }
     },
@@ -43,7 +42,7 @@ const theme = createTheme({
 
 // Base styles
 const baseInputStyles =
-  'block w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white';
+  'block w-full rounded-lg dark:border-none bg-white/5 py-1.5 px-3 text-sm/6';
 
 export const SingleDatePicker: React.FC<DatePickerProps> = ({
   onChange,
@@ -120,11 +119,11 @@ export const Days: React.FC<DaysProps> = ({
   return (
     <div className="w-full max-w-md justify-start">
       <Field className="m-4">
-        <Label className="text-sm/6 font-medium text-white flex">Day</Label>
+        <Label className="text-sm/6 font-medium flex">Day</Label>
         <div className="relative">
           <Select
             className={clsx(
-              'mt-3 block w-full appearance-none rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white',
+              'mt-3 block w-full appearance-none rounded-lg border border-gray-200 dark:border-none bg-white/5 py-1.5 px-3 text-sm/6',
               'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25',
               // Make the text of each option black on Windows
               '*:text-black'
