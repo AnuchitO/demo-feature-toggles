@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" width="560" height="560" preserveAspectRatio="none" viewBox="0 0 560 560">
+    <g mask="url(&quot;#SvgjsMask1750&quot;)" fill="none">
+        <g transform="translate(0, 0)" stroke-linecap="round" stroke="url(&quot;#SvgjsLinearGradient1751&quot;)">
+            <path d="M70 193.67 L70 366.33" stroke-width="15"></path>
+            <path d="M90 69.9 L90 490.1" stroke-width="15"></path>
+            <path d="M110 130.76 L110 429.24" stroke-width="15"></path>
+            <path d="M130 186.96 L130 373.04" stroke-width="15"></path>
+            <path d="M150 214.24 L150 345.76" stroke-width="15"></path>
+            <path d="M170 173.25 L170 386.75" stroke-width="15"></path>
+            <path d="M190 184.61 L190 375.39" stroke-width="15"></path>
+            <path d="M210 93.82 L210 466.18" stroke-width="15"></path>
+            <path d="M230 227.97 L230 332.03" stroke-width="15"></path>
+            <path d="M250 136.27 L250 423.73" stroke-width="15"></path>
+            <path d="M270 217.23 L270 342.77" stroke-width="15"></path>
+            <path d="M290 124.96 L290 435.04" stroke-width="15"></path>
+            <path d="M310 249.55 L310 310.45" stroke-width="15"></path>
+            <path d="M330 141.56 L330 418.44" stroke-width="15"></path>
+            <path d="M350 181 L350 379" stroke-width="15"></path>
+            <path d="M370 105.03 L370 454.97" stroke-width="15"></path>
+            <path d="M390 243.78 L390 316.22" stroke-width="15"></path>
+            <path d="M410 62.25 L410 497.75" stroke-width="15"></path>
+            <path d="M430 130.16 L430 429.84" stroke-width="15"></path>
+            <path d="M450 135.76 L450 424.24" stroke-width="15"></path>
+            <path d="M470 181.72 L470 378.28" stroke-width="15"></path>
+            <path d="M490 84.62 L490 475.38" stroke-width="15"></path>
+        </g>
+    </g>
+    <defs>
+        <mask id="SvgjsMask1750">
+            <rect width="560" height="560" fill="#ffffff"></rect>
+        </mask>
+        <linearGradient x1="50.400000000000006" y1="280" x2="509.6" y2="280" gradientUnits="userSpaceOnUse" id="SvgjsLinearGradient1751">
+            <stop stop-color="#3a7cc3" offset="0"></stop>
+            <stop stop-color="rgba(17, 142, 221, 1)" offset="0.2"></stop>
+            <stop stop-color="rgba(17, 114, 221, 1)" offset="0.5"></stop>
+            <stop stop-color="rgba(146, 17, 221, 1)" offset="0.9"></stop>
+            <stop stop-color="rgba(209, 17, 221, 1)" offset="1"></stop>
+        </linearGradient>
+    </defs>
+</svg>

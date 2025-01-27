@@ -1,14 +1,17 @@
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Transfers from './Transfers'
 import { Transactions } from './Transactions'
 import { Schedules } from './Schedules'
 import { Accounts } from './Accounts'
 import { FeatureTogglesProvider } from './FeatureTogglesContext'
+import welcome from './welcome.svg'
 import { DEMO_ACCOUNT } from './services/accounts';
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { FloatingNavBar } from './FlotingNavBar';
 import { Fragment } from 'react/jsx-runtime';
+import { useFeatureToggles } from './FeatureTogglesContext';
 
 const user = {
   name: 'Tom Cook',
@@ -232,20 +235,89 @@ export const MockupCard: React.FC = () => {
 };
 
 
+/* export const xxxx: React.FC = ({) => {
+  return (
+    <div className="bg-gray-100 dark:bg-gray-900">
+      <div className="flex flex-col justify-center mt-4" >
+        <Accounts />
+      </div>
+      <div className="mx-auto px-4 md:px-6 lg:px-8">
+        {children}
+      </div>
+    </div>
+  );
+} */
+
+
+
+// I want to create the layout <Layout><Transactions /></Layout> like that
+interface LayoutProps {
+  children: React.ReactNode
+}
+export const Layout = ({ children }: LayoutProps) => {
+  return (
+    <div className="">
+      <div className="flex flex-col justify-center mt-4" >
+        <Accounts />
+      </div>
+      <div className="mx-auto px-4 md:px-6 lg:px-8">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export function Welcome() {
+  return (
+    <div className="flex flex-col items-center justify-center p-4">
+      <img src={welcome} alt="welcome" className="w-40 h-40 mb-10" />
+      <h1 className="mb-2 mt-10 font-extrabold dark:text-base md:text-2xl dark:text-white">
+        Welcome to your Wealth
+      </h1>
+
+      <p className="mb-10 text-base text-center dark:text-gray-50 max-w-md">
+        Your financial dashboard to manage your wealth and grow your money
+      </p>
+    </div>
+  )
+}
+
+
+
 // Style UI kit from : https://flowbite.com/docs/components/bottom-navigation/
 export const MainContent: React.FC = () => {
+  const { features, loading } = useFeatureToggles()
+  const [routes, setRoutes] = useState([
+    { name: 'Home', path: '/', show: true },
+    { name: 'Transfer', path: '/transfer', show: true },
+    { name: 'Transactions', path: '/transactions', show: false },
+    { name: 'Scheduled', path: '/scheduled', show: false },
+  ])
+
+  useEffect(() => {
+    setRoutes([
+      ...routes,
+      { name: 'Transactions', path: '/transactions', show: features.enableViewTransactionsHistory },
+      { name: 'Scheduled', path: '/scheduled', show: features.enableViewScheduledTransactions },
+    ])
+  }, [loading])
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
+
   return <>
     <main>
       <div className="bg-gradient-radial min-w-[360px] from-[#A7C7E7] to-[#B3D9F7] mx-auto rounded-xl bg-white shadow-md max-w-2xl">
-        <div className="mx-auto h-[calc(100vh-28px)] overflow-y-auto">
+        <div className="mx-auto w-full h-[calc(100vh-0px)] pb-24 overflow-y-auto bg-gray-100 dark:bg-gray-900">
 
-          <div className="flex flex-col justify-center mt-4" >
+          {/* <div className="flex flex-col justify-center mt-4" >
             <Accounts />
-          </div>
+          </div> */}
           <Routes>
-            <Route path="/" element={<Transactions />} />
-            <Route path="/transactions" element={<Transactions />} />
-            <Route path="/scheduled" element={<Schedules />} />
+            <Route path="/" element={<Layout children={<Welcome />} />} />
+            {features.enableViewTransactionsHistory && <Route path="/transactions" element={<Transactions />} />}
+            {features.enableViewScheduledTransactions && <Route path="/scheduled" element={<Schedules />} />}
             <Route path="/transfer" element={<Transfers account={DEMO_ACCOUNT} />} />
           </Routes>
 

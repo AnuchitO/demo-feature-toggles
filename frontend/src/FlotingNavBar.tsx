@@ -61,11 +61,9 @@ export const FloatingNavBar: React.FC = () => {
   const [hide, setHide] = useState(false)
 
   const classIcon = "w-7 h-7 mb-1 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500"
-  const handleTooltip = () => { }
-  const handleTooltipLeave = () => { }
 
   const handleHome = () => {
-    navigate('/transactions');
+    navigate('/');
   }
 
   const handleTransactionsHistory = () => {
