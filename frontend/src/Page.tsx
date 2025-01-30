@@ -339,7 +339,7 @@ export function Page() {
               <div className="h-[46px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[124px] rounded-s-lg"></div>
               <div className="h-[46px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -start-[17px] top-[178px] rounded-s-lg"></div>
               <div className="h-[64px] w-[3px] bg-gray-800 dark:bg-gray-800 absolute -end-[17px] top-[142px] rounded-e-lg"></div>
-              <div className="rounded-[2rem] overflow-hidden min-w-[420px] h-[calc(100vh-28px)] bg-gray-800 dark:bg-gray-800">
+              <div className="rounded-[2rem] overflow-hidden min-w-[420px] h-[calc(100vh-28px)]">
                 <MainContent />
               </div>
             </div>
