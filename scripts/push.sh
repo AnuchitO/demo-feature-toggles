@@ -9,8 +9,9 @@ for remote in $(git remote); do
 done
 
 printf "Pushing to all remotes...\n"
+
 for remote in $(git remote); do
-    git push $remote
+    git push $remote main
 done
 
 printf "Pushed to all remotes.\n"
