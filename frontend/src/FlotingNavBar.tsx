@@ -63,7 +63,7 @@ export const FloatingNavBar: React.FC = () => {
   const classIcon = "w-7 h-7 mb-1 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500"
 
   const handleHome = () => {
-    navigate('/');
+    navigate('/home');
   }
 
   const handleTransactionsHistory = () => {

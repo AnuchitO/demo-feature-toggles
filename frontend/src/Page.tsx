@@ -290,7 +290,7 @@ export function Welcome() {
         Welcome to your Wealth
       </h1>
 
-      <p className="mb-10 text-base text-center dark:text-gray-50 max-w-md">
+      <p className="mb-10 text-base text-center dark:text-gray-50 max-w-72">
         Your financial dashboard to manage your wealth and grow your money
       </p>
     </div>
@@ -314,6 +314,7 @@ export const MainContent: React.FC = () => {
             <Route path="/" element={<Layout>
               {features.enableViewTransactionsHistory ? <Transactions /> : <Welcome />}
             </Layout>} />
+            <Route path="/home" element={<Layout><Welcome /></Layout>} />
             {features.enableViewTransactionsHistory && <Route path="/transactions" element={<Layout><Transactions /></Layout>} />}
             {features.enableViewScheduledTransactions && <Route path="/scheduled" element={<Layout><Schedules /></Layout>} />}
             <Route path="/transfer" element={<Layout><Transfers account={DEMO_ACCOUNT} /></Layout>} />
