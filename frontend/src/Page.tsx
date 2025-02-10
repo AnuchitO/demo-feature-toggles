@@ -311,7 +311,9 @@ export const MainContent: React.FC = () => {
       <div className="bg-gradient-radial min-w-[360px] from-[#A7C7E7] to-[#B3D9F7] mx-auto rounded-xl bg-white shadow-md max-w-2xl">
         <div className="mx-auto w-full h-[calc(100vh-0px)] pb-24 overflow-y-auto bg-gray-50 dark:bg-gray-900">
           <Routes>
-            <Route path="/" element={<Layout><Welcome /></Layout>} />
+            <Route path="/" element={<Layout>
+              {features.enableViewTransactionsHistory ? <Transactions /> : <Welcome />}
+            </Layout>} />
             {features.enableViewTransactionsHistory && <Route path="/transactions" element={<Layout><Transactions /></Layout>} />}
             {features.enableViewScheduledTransactions && <Route path="/scheduled" element={<Layout><Schedules /></Layout>} />}
             <Route path="/transfer" element={<Layout><Transfers account={DEMO_ACCOUNT} /></Layout>} />
