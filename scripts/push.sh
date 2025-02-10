@@ -2,15 +2,17 @@
 
 set -euo pipefail
 
-echo "Pushing to all remotes..."
+printf "\360\237\215\272\t push to all remotes...  \n"
 
-for remote in $(git remote); do
-    git pull -r $remote main
-done
-
-for remote in $(git remote); do
-    git push $remote
-done
-
-echo "Pushed to all remotes."
+# echo "Pushing to all remotes..."
+#
+# for remote in $(git remote); do
+#     git pull -r $remote main
+# done
+#
+# for remote in $(git remote); do
+#     git push $remote
+# done
+#
+# echo "Pushed to all remotes."
 
