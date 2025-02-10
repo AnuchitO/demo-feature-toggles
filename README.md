@@ -1,7 +1,6 @@
 # demo-feature-toggles
 Demo Feature Toggles
 
-
 ## Workshops:
 
 ### [STORY-1] View Transactions History
